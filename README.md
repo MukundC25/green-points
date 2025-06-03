@@ -27,6 +27,35 @@ A comprehensive e-waste rewards system that incentivizes responsible electronic 
 - **Real-time Validation**: Input validation and error handling
 - **Export Functionality**: CSV export of transaction history
 
+## 🛠️ Tech Stack
+
+### Frontend
+- **React.js** - UI library with component-based architecture
+- **Vite** - Fast build tool and development server
+- **Tailwind CSS** - Utility-first CSS framework
+- **React Router DOM** - Client-side routing
+- **Axios** - HTTP client for API requests
+
+### Backend
+- **Node.js** - JavaScript runtime environment
+- **Express.js** - Web application framework
+- **MongoDB** - NoSQL document database
+- **Mongoose** - MongoDB object modeling
+- **JWT** - Secure authentication tokens
+- **bcryptjs** - Password hashing
+
+### Development Tools
+- **npm** - Package management
+- **Git** - Version control
+- **ESLint** - Code linting
+- **PostCSS** - CSS processing
+
+### AI-Ready Features
+- Smart points calculation algorithm
+- Image upload capability for future AI integration
+- Rich metadata collection for ML training
+- API structure ready for AI services
+
 ## 🏗️ Architecture
 
 ### Backend (Node.js + Express)
@@ -278,7 +307,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **Mukund Chavan**  
 AI Research Intern  
-sortUs E-Waste Solutions
+sortUs 
 
 ---
 
