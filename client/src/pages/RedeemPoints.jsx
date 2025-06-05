@@ -32,8 +32,9 @@ const RedeemPoints = () => {
       rewards: [
         { id: 1, name: 'Bamboo Water Bottle', points: 150, description: 'Sustainable bamboo water bottle', image: '🌿' },
         { id: 2, name: 'Organic Cotton Tote Bag', points: 100, description: 'Reusable organic cotton bag', image: '👜' },
-        { id: 3, name: 'Solar Power Bank', points: 300, description: '10,000mAh solar power bank', image: '🔋' },
-        { id: 4, name: 'Eco-Friendly Phone Case', points: 120, description: 'Biodegradable phone case', image: '📱' },
+        { id: 3, name: 'Solar Power Bank', points: 650, description: '10,000mAh solar power bank', image: '🔋' },
+        { id: 4, name: 'Premium Eco Phone Case', points: 520, description: 'Premium biodegradable phone case', image: '📱' },
+        { id: 15, name: 'Eco-Friendly Laptop Stand', points: 600, description: 'Sustainable bamboo laptop stand', image: '💻' },
       ]
     },
     {
@@ -45,7 +46,8 @@ const RedeemPoints = () => {
         { id: 5, name: '10% Off Electronics Store', points: 50, description: 'Discount at partner electronics stores', image: '🏪' },
         { id: 6, name: '15% Off Green Products', points: 75, description: 'Discount on eco-friendly products', image: '🌱' },
         { id: 7, name: '20% Off Repair Services', points: 100, description: 'Discount on device repair services', image: '🔧' },
-        { id: 8, name: '$25 Gift Card', points: 250, description: 'Gift card for sustainable brands', image: '🎁' },
+        { id: 8, name: '$100 Premium Gift Card', points: 800, description: 'Premium gift card for sustainable brands', image: '🎁' },
+        { id: 16, name: '$50 Electronics Voucher', points: 550, description: 'Voucher for eco-friendly electronics', image: '🎫' },
       ]
     },
     {
@@ -56,7 +58,7 @@ const RedeemPoints = () => {
       rewards: [
         { id: 9, name: 'Energy Audit Discount', points: 200, description: 'Free home energy audit', image: '⚡' },
         { id: 10, name: 'LED Bulb Set', points: 80, description: 'Set of 6 energy-efficient LED bulbs', image: '💡' },
-        { id: 11, name: 'Smart Thermostat Discount', points: 400, description: '30% off smart thermostat', image: '🌡️' },
+        { id: 11, name: 'Premium Smart Thermostat', points: 750, description: 'Complete smart thermostat system', image: '🌡️' },
       ]
     },
     {
@@ -67,7 +69,7 @@ const RedeemPoints = () => {
       rewards: [
         { id: 12, name: 'Compost Bin', points: 180, description: 'Small home composting bin', image: '🗂️' },
         { id: 13, name: 'Seed Starter Kit', points: 60, description: 'Organic vegetable seed kit', image: '🌱' },
-        { id: 14, name: 'Rain Water Collector', points: 350, description: 'Eco-friendly rain water collection system', image: '🌧️' },
+        { id: 14, name: 'Premium Rain Water System', points: 900, description: 'Complete eco-friendly rain water collection system', image: '🌧️' },
       ]
     }
   ];
