@@ -117,7 +117,7 @@ const BadgesDisplay = ({ showTitle = true, limit = null }) => {
               key={index}
               className={`border rounded-lg p-3 text-center transition-all ${
                 badge.earned
-                  ? 'bg-gradient-to-br from-yellow-50 to-orange-50 border-yellow-300 shadow-md'
+                  ? 'bg-gradient-to-br from-green-50 to-emerald-50 border-green-200 shadow-sm'
                   : 'bg-gray-50 border-gray-200 opacity-75'
               }`}
             >

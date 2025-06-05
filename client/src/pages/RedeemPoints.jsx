@@ -164,11 +164,11 @@ const RedeemPoints = () => {
                         canAfford || showAs2XOption
                           ? 'border-gray-200 hover:border-primary-300 hover:shadow-md'
                           : 'border-gray-100 bg-gray-50'
-                      } ${showAs2XOption ? 'ring-2 ring-purple-300 bg-gradient-to-br from-purple-50 to-pink-50' : ''}`}
+                      } ${showAs2XOption ? 'ring-2 ring-blue-200 bg-gradient-to-br from-blue-50 to-indigo-50' : ''}`}
                     >
                       {showAs2XOption && (
-                        <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xs font-bold px-2 py-1 rounded-full mb-2 text-center">
-                          ⚡ 2X VALUE AVAILABLE
+                        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-xs font-medium px-3 py-1 rounded-md mb-2 text-center">
+                          ⚡ 2X Value Available
                         </div>
                       )}
 
@@ -188,7 +188,7 @@ const RedeemPoints = () => {
                           {showAs2XOption ? (
                             <div className="flex flex-col">
                               <span className="text-xs text-gray-500 line-through">{reward.points}</span>
-                              <span className="font-semibold text-purple-600">
+                              <span className="font-semibold text-blue-600">
                                 {Math.ceil(reward.points / 2)} (2X Value!)
                               </span>
                             </div>
@@ -204,7 +204,7 @@ const RedeemPoints = () => {
                           </span>
                         )}
                         {showAs2XOption && (
-                          <span className="text-xs text-purple-600 font-medium">
+                          <span className="text-xs text-blue-600 font-medium">
                             ⚡ 2X Value Active!
                           </span>
                         )}
@@ -217,7 +217,7 @@ const RedeemPoints = () => {
                           canAfford
                             ? 'bg-primary-600 text-white hover:bg-primary-700 disabled:opacity-50'
                             : showAs2XOption
-                            ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700 disabled:opacity-50'
+                            ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700 disabled:opacity-50'
                             : 'bg-gray-200 text-gray-500 cursor-not-allowed'
                         }`}
                       >

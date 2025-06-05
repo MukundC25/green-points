@@ -29,21 +29,21 @@ const TwoXValueBanner = () => {
   }
 
   return (
-    <div className="bg-gradient-to-r from-purple-600 via-pink-600 to-red-600 rounded-lg p-4 mb-6 text-white shadow-lg border border-purple-300 animate-pulse">
+    <div className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-lg p-4 mb-6 text-white shadow-md border border-blue-200">
       <div className="flex items-center space-x-3">
-        <div className="bg-white bg-opacity-30 rounded-full p-2 shadow-md">
+        <div className="bg-white bg-opacity-20 rounded-full p-2">
           <Zap className="h-6 w-6 text-white" />
         </div>
         <div className="flex-1">
-          <h3 className="font-bold text-lg text-white drop-shadow-md">🎉 2X Points Value Active!</h3>
-          <p className="text-white text-opacity-90 drop-shadow-sm">
+          <h3 className="font-semibold text-lg text-white">⚡ 2X Points Value Active</h3>
+          <p className="text-blue-100">
             Use your Green Points now for <strong>double value</strong>! Limited time offer.
           </p>
         </div>
         <div className="text-right">
-          <div className="flex items-center space-x-1 text-white bg-black bg-opacity-20 rounded-md px-2 py-1">
+          <div className="flex items-center space-x-1 text-white bg-white bg-opacity-20 rounded-md px-3 py-1">
             <Clock className="h-4 w-4" />
-            <span className="text-sm font-bold">
+            <span className="text-sm font-medium">
               {status.timeRemainingFormatted} left
             </span>
           </div>
