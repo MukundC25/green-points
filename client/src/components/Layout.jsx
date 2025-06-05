@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { 
-  Home, 
-  Upload, 
-  Gift, 
-  History, 
-  User, 
-  LogOut, 
-  Menu, 
+import {
+  Home,
+  Upload,
+  Gift,
+  History,
+  User,
+  Users,
+  LogOut,
+  Menu,
   X,
   Leaf
 } from 'lucide-react';
@@ -24,6 +25,7 @@ const Layout = ({ children }) => {
     { name: 'Submit E-Waste', href: '/submit', icon: Upload },
     { name: 'Redeem Points', href: '/redeem', icon: Gift },
     { name: 'Transaction History', href: '/history', icon: History },
+    { name: 'Refer Friends', href: '/referral', icon: Users },
     { name: 'Profile', href: '/profile', icon: User },
   ];
 

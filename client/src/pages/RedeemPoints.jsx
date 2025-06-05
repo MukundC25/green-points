@@ -1,13 +1,27 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { pointsService } from '../services/pointsService';
-import { Gift, Coins, ShoppingCart, Leaf, Zap, Home } from 'lucide-react';
+import { Gift, Coins, ShoppingCart, Leaf, Coffee, Shirt, Home, Zap } from 'lucide-react';
 import toast from 'react-hot-toast';
 import TwoXValueBanner from '../components/TwoXValueBanner';
 
 const RedeemPoints = () => {
   const [loading, setLoading] = useState(false);
+  const [twoXStatus, setTwoXStatus] = useState(null);
   const { user, refreshUser } = useAuth();
+
+  useEffect(() => {
+    fetchTwoXStatus();
+  }, []);
+
+  const fetchTwoXStatus = async () => {
+    try {
+      const response = await pointsService.get2XStatus();
+      setTwoXStatus(response);
+    } catch (error) {
+      console.error('Failed to fetch 2X status:', error);
+    }
+  };
 
   const rewardCategories = [
     {
@@ -138,46 +152,70 @@ const RedeemPoints = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {category.rewards.map((reward) => {
                   const canAfford = user?.greenPoints >= reward.points;
-                  
+                  const canAffordWith2X = twoXStatus?.canUse2X && user?.greenPoints >= Math.ceil(reward.points / 2);
+                  const showAs2XOption = !canAfford && canAffordWith2X;
+
                   return (
                     <div
                       key={reward.id}
                       className={`border rounded-lg p-4 transition-all ${
-                        canAfford 
-                          ? 'border-gray-200 hover:border-primary-300 hover:shadow-md' 
+                        canAfford || showAs2XOption
+                          ? 'border-gray-200 hover:border-primary-300 hover:shadow-md'
                           : 'border-gray-100 bg-gray-50'
-                      }`}
+                      } ${showAs2XOption ? 'ring-2 ring-purple-300 bg-gradient-to-br from-purple-50 to-pink-50' : ''}`}
                     >
+                      {showAs2XOption && (
+                        <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xs font-bold px-2 py-1 rounded-full mb-2 text-center">
+                          ⚡ 2X VALUE AVAILABLE
+                        </div>
+                      )}
+
                       <div className="text-center mb-4">
                         <div className="text-4xl mb-2">{reward.image}</div>
-                        <h3 className={`font-semibold ${canAfford ? 'text-gray-900' : 'text-gray-500'}`}>
+                        <h3 className={`font-semibold ${canAfford || showAs2XOption ? 'text-gray-900' : 'text-gray-500'}`}>
                           {reward.name}
                         </h3>
-                        <p className={`text-sm mt-1 ${canAfford ? 'text-gray-600' : 'text-gray-400'}`}>
+                        <p className={`text-sm mt-1 ${canAfford || showAs2XOption ? 'text-gray-600' : 'text-gray-400'}`}>
                           {reward.description}
                         </p>
                       </div>
-                      
+
                       <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center space-x-1">
-                          <Coins className={`h-4 w-4 ${canAfford ? 'text-primary-600' : 'text-gray-400'}`} />
-                          <span className={`font-semibold ${canAfford ? 'text-primary-600' : 'text-gray-400'}`}>
-                            {reward.points}
-                          </span>
+                          <Coins className={`h-4 w-4 ${canAfford || showAs2XOption ? 'text-primary-600' : 'text-gray-400'}`} />
+                          {showAs2XOption ? (
+                            <div className="flex flex-col">
+                              <span className="text-xs text-gray-500 line-through">{reward.points}</span>
+                              <span className="font-semibold text-purple-600">
+                                {Math.ceil(reward.points / 2)} (2X Value!)
+                              </span>
+                            </div>
+                          ) : (
+                            <span className={`font-semibold ${canAfford ? 'text-primary-600' : 'text-gray-400'}`}>
+                              {reward.points}
+                            </span>
+                          )}
                         </div>
-                        {!canAfford && (
+                        {!canAfford && !showAs2XOption && (
                           <span className="text-xs text-red-500 font-medium">
                             Need {reward.points - (user?.greenPoints || 0)} more
                           </span>
                         )}
+                        {showAs2XOption && (
+                          <span className="text-xs text-purple-600 font-medium">
+                            ⚡ 2X Value Active!
+                          </span>
+                        )}
                       </div>
-                      
+
                       <button
                         onClick={() => handleRedeem(reward)}
-                        disabled={!canAfford || loading}
+                        disabled={(!canAfford && !showAs2XOption) || loading}
                         className={`w-full py-2 px-4 rounded-md text-sm font-medium transition-colors ${
                           canAfford
                             ? 'bg-primary-600 text-white hover:bg-primary-700 disabled:opacity-50'
+                            : showAs2XOption
+                            ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700 disabled:opacity-50'
                             : 'bg-gray-200 text-gray-500 cursor-not-allowed'
                         }`}
                       >
@@ -190,6 +228,11 @@ const RedeemPoints = () => {
                           <>
                             <Gift className="h-4 w-4 inline mr-1" />
                             Redeem
+                          </>
+                        ) : showAs2XOption ? (
+                          <>
+                            <Zap className="h-4 w-4 inline mr-1" />
+                            Redeem with 2X Value
                           </>
                         ) : (
                           'Insufficient Points'

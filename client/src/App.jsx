@@ -12,6 +12,7 @@ import SubmitEWaste from './pages/SubmitEWaste';
 import RedeemPoints from './pages/RedeemPoints';
 import TransactionHistory from './pages/TransactionHistory';
 import Profile from './pages/Profile';
+import Referral from './pages/Referral';
 import Landing from './pages/Landing';
 
 // Protected Route Component
@@ -113,15 +114,25 @@ function App() {
             </ProtectedRoute>
           } 
         />
-        <Route 
-          path="/profile" 
+        <Route
+          path="/profile"
           element={
             <ProtectedRoute>
               <Layout>
                 <Profile />
               </Layout>
             </ProtectedRoute>
-          } 
+          }
+        />
+        <Route
+          path="/referral"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <Referral />
+              </Layout>
+            </ProtectedRoute>
+          }
         />
 
         {/* Catch all route */}

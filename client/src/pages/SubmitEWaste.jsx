@@ -76,7 +76,7 @@ const SubmitEWaste = () => {
 
   useEffect(() => {
     calculatePoints();
-  }, [formData.type, formData.condition, formData.quantity]);
+  }, [formData.type, formData.condition, formData.quantity, formData.weight]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
