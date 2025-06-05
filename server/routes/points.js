@@ -15,13 +15,14 @@ const router = express.Router();
  */
 router.post('/submit', authenticateToken, async (req, res) => {
   try {
-    const { type, condition, quantity, description, imageUrl } = req.body;
+    const { type, condition, quantity, weight, description, imageUrl } = req.body;
 
     // Prepare data for points calculation
     const pointsData = {
       type,
       condition,
       quantity: parseInt(quantity),
+      weight: weight ? parseFloat(weight) : 0,
       userFrequency: req.user.userFrequency
     };
 
@@ -44,6 +45,7 @@ router.post('/submit', authenticateToken, async (req, res) => {
       itemType: type,
       condition,
       quantity: parseInt(quantity),
+      weight: weight ? parseFloat(weight) : 0,
       userFrequency: req.user.userFrequency,
       description,
       imageUrl
@@ -96,6 +98,11 @@ router.post('/redeem', authenticateToken, async (req, res) => {
       });
     }
 
+    // Check 2X value eligibility
+    const canUse2X = req.user.canUse2XValue();
+    const multiplier = canUse2X ? 2 : 1;
+    const effectiveValue = points * multiplier;
+
     // Check if user has enough points
     if (req.user.greenWallet.balance < points) {
       return res.status(400).json({
@@ -106,13 +113,21 @@ router.post('/redeem', authenticateToken, async (req, res) => {
     }
 
     // Redeem points
-    const source = `Redeemed for ${redeemFor}`;
+    const source = canUse2X
+      ? `Redeemed for ${redeemFor} (2X Value!)`
+      : `Redeemed for ${redeemFor}`;
+
     req.user.redeemPoints(points, source);
     await req.user.save();
 
     res.json({
-      message: `Successfully redeemed ${points} Green Points!`,
+      message: canUse2X
+        ? `Successfully redeemed ${points} Green Points with 2X value (worth ${effectiveValue} points)!`
+        : `Successfully redeemed ${points} Green Points!`,
       pointsRedeemed: points,
+      effectiveValue,
+      multiplier,
+      used2XValue: canUse2X,
       redeemFor,
       newBalance: req.user.greenWallet.balance,
       transaction: {
@@ -200,14 +215,64 @@ router.get('/history', authenticateToken, async (req, res) => {
  * POST /api/points/calculate
  * Calculate points for given e-waste (preview)
  */
+/**
+ * GET /api/points/2x-status
+ * Get 2X value status and time remaining
+ */
+router.get('/2x-status', authenticateToken, async (req, res) => {
+  try {
+    const canUse2X = req.user.canUse2XValue();
+    const timeRemaining = req.user.get2XTimeRemaining();
+
+    res.json({
+      canUse2X,
+      timeRemaining,
+      timeRemainingFormatted: formatTimeRemaining(timeRemaining)
+    });
+  } catch (error) {
+    console.error('Get 2X status error:', error);
+    res.status(500).json({
+      message: 'Failed to get 2X status',
+      error: error.message
+    });
+  }
+});
+
+/**
+ * GET /api/points/badges
+ * Get user badges
+ */
+router.get('/badges', authenticateToken, async (req, res) => {
+  try {
+    const badges = req.user.badges || [];
+    const badgeDetails = badges.map(badge => ({
+      name: badge,
+      icon: getBadgeIcon(badge),
+      description: getBadgeDescription(badge)
+    }));
+
+    res.json({
+      badges: badgeDetails,
+      totalBadges: badges.length
+    });
+  } catch (error) {
+    console.error('Get badges error:', error);
+    res.status(500).json({
+      message: 'Failed to get badges',
+      error: error.message
+    });
+  }
+});
+
 router.post('/calculate', authenticateToken, async (req, res) => {
   try {
-    const { type, condition, quantity } = req.body;
+    const { type, condition, quantity, weight } = req.body;
 
     const pointsData = {
       type,
       condition,
       quantity: parseInt(quantity),
+      weight: weight ? parseFloat(weight) : 0,
       userFrequency: req.user.userFrequency
     };
 
@@ -237,5 +302,42 @@ router.post('/calculate', authenticateToken, async (req, res) => {
     });
   }
 });
+
+// Helper functions
+function formatTimeRemaining(milliseconds) {
+  if (milliseconds <= 0) return 'Expired';
+
+  const hours = Math.floor(milliseconds / (1000 * 60 * 60));
+  const minutes = Math.floor((milliseconds % (1000 * 60 * 60)) / (1000 * 60));
+
+  if (hours > 0) {
+    return `${hours}h ${minutes}m`;
+  }
+  return `${minutes}m`;
+}
+
+function getBadgeIcon(badge) {
+  const icons = {
+    'Welcome': '🎉',
+    'Eco Hero': '🌟',
+    'Bulk Recycler': '♻️',
+    'Green Champion': '🏆',
+    'Heavy Lifter': '💪',
+    'Regular Recycler': '🔄'
+  };
+  return icons[badge] || '🏅';
+}
+
+function getBadgeDescription(badge) {
+  const descriptions = {
+    'Welcome': 'Welcome to Green Points!',
+    'Eco Hero': 'Earned 500+ Green Points',
+    'Bulk Recycler': 'Recycled 10+ items',
+    'Green Champion': 'Earned 1000+ Green Points',
+    'Heavy Lifter': 'Recycled 50+ kg of e-waste',
+    'Regular Recycler': 'Regular recycling contributor'
+  };
+  return descriptions[badge] || 'Achievement unlocked!';
+}
 
 module.exports = router;

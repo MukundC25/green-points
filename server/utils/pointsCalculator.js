@@ -44,6 +44,11 @@ function calculateGreenPoints(data) {
   // Quantity multiplier
   points += data.quantity * 5;
 
+  // Weight bonus: 2 points per kg
+  if (data.weight) {
+    points += data.weight * 2;
+  }
+
   // User frequency bonus
   if (data.userFrequency === 'Regular') {
     points += 20;
@@ -88,6 +93,7 @@ function getPointsBreakdown(data) {
     basePoints: 0,
     conditionBonus: 0,
     quantityBonus: 0,
+    weightBonus: 0,
     frequencyBonus: 0,
     bonusPoints: 0,
     total: 0
@@ -113,6 +119,9 @@ function getPointsBreakdown(data) {
   // Quantity bonus
   breakdown.quantityBonus = data.quantity * 5;
 
+  // Weight bonus
+  breakdown.weightBonus = data.weight ? data.weight * 2 : 0;
+
   // Frequency bonus
   if (data.userFrequency === 'Regular') breakdown.frequencyBonus = 20;
   else if (data.userFrequency === 'Occasional') breakdown.frequencyBonus = 10;
@@ -122,11 +131,12 @@ function getPointsBreakdown(data) {
 
   // Total
   breakdown.total = Math.max(
-    breakdown.basePoints + 
-    breakdown.conditionBonus + 
-    breakdown.quantityBonus + 
-    breakdown.frequencyBonus + 
-    breakdown.bonusPoints, 
+    breakdown.basePoints +
+    breakdown.conditionBonus +
+    breakdown.quantityBonus +
+    breakdown.weightBonus +
+    breakdown.frequencyBonus +
+    breakdown.bonusPoints,
     5
   );
 
@@ -149,6 +159,10 @@ function validatePointsData(data) {
 
   if (!data.quantity || data.quantity < 1) {
     errors.push('Quantity must be at least 1');
+  }
+
+  if (data.weight && data.weight < 0) {
+    errors.push('Weight must be a positive number');
   }
 
   if (!data.userFrequency) {

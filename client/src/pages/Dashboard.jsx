@@ -13,6 +13,8 @@ import {
   Recycle
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import TwoXValueBanner from '../components/TwoXValueBanner';
+import BadgesDisplay from '../components/BadgesDisplay';
 
 const Dashboard = () => {
   const { user, refreshUser } = useAuth();
@@ -60,6 +62,9 @@ const Dashboard = () => {
           You're making a positive impact on the environment. Keep up the great work!
         </p>
       </div>
+
+      {/* 2X Value Banner */}
+      <TwoXValueBanner />
 
       {/* Green Points Balance - Main Feature */}
       <div className="bg-white rounded-lg shadow-lg p-6 border-l-4 border-primary-500">
@@ -214,6 +219,11 @@ const Dashboard = () => {
             </div>
           )}
         </div>
+      </div>
+
+      {/* Badges Section */}
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <BadgesDisplay limit={4} />
       </div>
 
       {/* Items Submitted Breakdown */}

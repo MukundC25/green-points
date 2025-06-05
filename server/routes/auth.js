@@ -10,7 +10,7 @@ const router = express.Router();
  */
 router.post('/register', async (req, res) => {
   try {
-    const { name, email, password, phone, address, city, state, zipCode } = req.body;
+    const { name, email, password, phone, address, city, state, zipCode, referralCode } = req.body;
 
     // Validation
     if (!name || !email || !password) {
@@ -33,11 +33,18 @@ router.post('/register', async (req, res) => {
       });
     }
 
+    // Handle referral
+    let referrer = null;
+    if (referralCode) {
+      referrer = await User.findOne({ referralCode: referralCode.toUpperCase() });
+    }
+
     // Create new user
     const user = new User({
       name,
       email: email.toLowerCase(),
       password,
+      referredBy: referrer ? referrer._id : null,
       profile: {
         phone,
         address,
@@ -47,7 +54,20 @@ router.post('/register', async (req, res) => {
       }
     });
 
+    // Add welcome bonus and badge
+    user.addPoints(50, 'Welcome Bonus', { type: 'welcome' });
+    user.badges.push('Welcome');
+    user.generateReferralCode();
+
     await user.save();
+
+    // Give referral bonus to referrer
+    if (referrer && !user.referralBonusClaimed) {
+      referrer.addPoints(30, `Referral Bonus - ${user.name}`, { type: 'referral' });
+      await referrer.save();
+      user.referralBonusClaimed = true;
+      await user.save();
+    }
 
     // Generate token
     const token = generateToken(user._id);

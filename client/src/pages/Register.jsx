@@ -13,7 +13,8 @@ const Register = () => {
     address: '',
     city: '',
     state: '',
-    zipCode: ''
+    zipCode: '',
+    referralCode: ''
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -306,6 +307,30 @@ const Register = () => {
                   placeholder="ZIP Code"
                 />
               </div>
+            </div>
+
+            {/* Referral Code Field */}
+            <div>
+              <label htmlFor="referralCode" className="block text-sm font-medium text-gray-700 mb-2">
+                Referral Code (Optional)
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <User className="h-5 w-5 text-gray-400" />
+                </div>
+                <input
+                  id="referralCode"
+                  name="referralCode"
+                  type="text"
+                  value={formData.referralCode}
+                  onChange={handleChange}
+                  className="input pl-10"
+                  placeholder="Enter referral code to get bonus points"
+                />
+              </div>
+              <p className="mt-1 text-sm text-gray-500">
+                💡 Get 30 bonus points when you use a friend's referral code!
+              </p>
             </div>
 
             {/* Submit Button */}

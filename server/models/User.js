@@ -24,6 +24,7 @@ const transactionSchema = new mongoose.Schema({
     itemType: String,
     condition: String,
     quantity: Number,
+    weight: Number,
     userFrequency: String
   }
 });
@@ -98,6 +99,31 @@ const userSchema = new mongoose.Schema({
   lastLogin: {
     type: Date,
     default: Date.now
+  },
+  badges: {
+    type: [String],
+    default: []
+  },
+  referralCode: {
+    type: String,
+    unique: true,
+    sparse: true
+  },
+  referredBy: {
+    type: String,
+    default: null
+  },
+  referralBonusClaimed: {
+    type: Boolean,
+    default: false
+  },
+  totalItemsRecycled: {
+    type: Number,
+    default: 0
+  },
+  totalWeightRecycled: {
+    type: Number,
+    default: 0
   }
 }, {
   timestamps: true
@@ -134,20 +160,34 @@ userSchema.methods.updateUserFrequency = function() {
   }
 };
 
-// Add points to wallet
+// Add points to wallet with weight bonus
 userSchema.methods.addPoints = function(points, source, metadata = {}) {
+  // Add weight bonus: 2 points per kg
+  if (metadata.weight) {
+    points += metadata.weight * 2;
+  }
+
   this.greenWallet.balance += points;
   this.greenPoints = this.greenWallet.balance;
   this.greenWallet.totalEarned += points;
-  
+
+  // Update recycling stats
+  if (metadata.quantity) {
+    this.totalItemsRecycled += metadata.quantity;
+  }
+  if (metadata.weight) {
+    this.totalWeightRecycled += metadata.weight;
+  }
+
   this.greenWallet.history.push({
     points,
     source,
     type: 'credit',
     metadata
   });
-  
+
   this.updateUserFrequency();
+  this.updateBadges();
 };
 
 // Redeem points from wallet
@@ -165,6 +205,86 @@ userSchema.methods.redeemPoints = function(points, source) {
     source,
     type: 'debit'
   });
+};
+
+// Update badges based on achievements
+userSchema.methods.updateBadges = function() {
+  const newBadges = [];
+
+  // Welcome Badge (on signup)
+  if (!this.badges.includes('Welcome')) {
+    newBadges.push('Welcome');
+  }
+
+  // Eco Hero (500+ points earned)
+  if (this.greenWallet.totalEarned >= 500 && !this.badges.includes('Eco Hero')) {
+    newBadges.push('Eco Hero');
+  }
+
+  // Bulk Recycler (10+ items recycled)
+  if (this.totalItemsRecycled >= 10 && !this.badges.includes('Bulk Recycler')) {
+    newBadges.push('Bulk Recycler');
+  }
+
+  // Green Champion (1000+ points earned)
+  if (this.greenWallet.totalEarned >= 1000 && !this.badges.includes('Green Champion')) {
+    newBadges.push('Green Champion');
+  }
+
+  // Heavy Lifter (50+ kg recycled)
+  if (this.totalWeightRecycled >= 50 && !this.badges.includes('Heavy Lifter')) {
+    newBadges.push('Heavy Lifter');
+  }
+
+  // Regular Recycler (Regular user frequency)
+  if (this.userFrequency === 'Regular' && !this.badges.includes('Regular Recycler')) {
+    newBadges.push('Regular Recycler');
+  }
+
+  // Add new badges
+  this.badges = [...this.badges, ...newBadges];
+  return newBadges;
+};
+
+// Check if points are eligible for 2X value (within 24 hours)
+userSchema.methods.canUse2XValue = function() {
+  const lastCreditTransaction = this.greenWallet.history
+    .filter(t => t.type === 'credit')
+    .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))[0];
+
+  if (!lastCreditTransaction) return false;
+
+  const now = new Date();
+  const lastEarned = new Date(lastCreditTransaction.timestamp);
+  const timeDiff = now - lastEarned;
+  const twentyFourHours = 24 * 60 * 60 * 1000;
+
+  return timeDiff <= twentyFourHours;
+};
+
+// Get time remaining for 2X value
+userSchema.methods.get2XTimeRemaining = function() {
+  const lastCreditTransaction = this.greenWallet.history
+    .filter(t => t.type === 'credit')
+    .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))[0];
+
+  if (!lastCreditTransaction) return 0;
+
+  const now = new Date();
+  const lastEarned = new Date(lastCreditTransaction.timestamp);
+  const timeDiff = now - lastEarned;
+  const twentyFourHours = 24 * 60 * 60 * 1000;
+
+  return Math.max(0, twentyFourHours - timeDiff);
+};
+
+// Generate unique referral code
+userSchema.methods.generateReferralCode = function() {
+  if (!this.referralCode) {
+    this.referralCode = this.name.replace(/\s+/g, '').toUpperCase().substring(0, 3) +
+                       Math.random().toString(36).substring(2, 8).toUpperCase();
+  }
+  return this.referralCode;
 };
 
 module.exports = mongoose.model('User', userSchema);

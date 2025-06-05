@@ -31,6 +31,18 @@ export const pointsService = {
     const response = await api.post('/points/calculate', ewasteData);
     return response.data;
   },
+
+  // Get 2X value status
+  get2XStatus: async () => {
+    const response = await api.get('/points/2x-status');
+    return response.data;
+  },
+
+  // Get user badges
+  getBadges: async () => {
+    const response = await api.get('/points/badges');
+    return response.data;
+  },
 };
 
 export const userService = {

@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { pointsService } from '../services/pointsService';
 import { Gift, Coins, ShoppingCart, Leaf, Zap, Home } from 'lucide-react';
 import toast from 'react-hot-toast';
+import TwoXValueBanner from '../components/TwoXValueBanner';
 
 const RedeemPoints = () => {
   const [loading, setLoading] = useState(false);
@@ -115,6 +116,9 @@ const RedeemPoints = () => {
           </div>
         </div>
       </div>
+
+      {/* 2X Value Banner */}
+      <TwoXValueBanner />
 
       {/* Reward Categories */}
       {rewardCategories.map((category) => {

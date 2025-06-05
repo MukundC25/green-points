@@ -10,6 +10,7 @@ const SubmitEWaste = () => {
     type: '',
     condition: '',
     quantity: 1,
+    weight: '',
     description: '',
     imageUrl: ''
   });
@@ -44,7 +45,8 @@ const SubmitEWaste = () => {
     const { name, value } = e.target;
     setFormData({
       ...formData,
-      [name]: name === 'quantity' ? parseInt(value) || 1 : value
+      [name]: name === 'quantity' ? parseInt(value) || 1 :
+              name === 'weight' ? parseFloat(value) || '' : value
     });
   };
 
@@ -58,7 +60,8 @@ const SubmitEWaste = () => {
       const response = await pointsService.calculatePoints({
         type: formData.type,
         condition: formData.condition,
-        quantity: formData.quantity
+        quantity: formData.quantity,
+        weight: formData.weight
       });
       
       setEstimatedPoints(response.estimatedPoints);
@@ -187,6 +190,27 @@ const SubmitEWaste = () => {
                 />
               </div>
 
+              {/* Weight */}
+              <div>
+                <label htmlFor="weight" className="block text-sm font-medium text-gray-700 mb-2">
+                  Weight (kg) - Optional
+                </label>
+                <input
+                  id="weight"
+                  name="weight"
+                  type="number"
+                  min="0"
+                  step="0.1"
+                  value={formData.weight}
+                  onChange={handleChange}
+                  className="input"
+                  placeholder="Weight in kilograms (e.g., 2.5)"
+                />
+                <p className="mt-1 text-sm text-gray-500">
+                  💡 Earn +2 points per kg! Heavier items get bonus points.
+                </p>
+              </div>
+
               {/* Description */}
               <div>
                 <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
@@ -293,6 +317,12 @@ const SubmitEWaste = () => {
                         <span className="font-medium text-green-600">+{breakdown.quantityBonus}</span>
                       </div>
                     )}
+                    {breakdown.weightBonus > 0 && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Weight bonus:</span>
+                        <span className="font-medium text-green-600">+{breakdown.weightBonus}</span>
+                      </div>
+                    )}
                     {breakdown.frequencyBonus > 0 && (
                       <div className="flex justify-between">
                         <span className="text-gray-600">Frequency bonus:</span>
@@ -353,8 +383,10 @@ const SubmitEWaste = () => {
             <ul className="text-sm text-blue-800 space-y-1">
               <li>• Working devices earn more points</li>
               <li>• Submit multiple items for quantity bonus</li>
+              <li>• Add weight for +2 points per kg</li>
               <li>• Regular users get frequency bonuses</li>
               <li>• Rare items like laptops earn extra points</li>
+              <li>• Use points within 24hrs for 2X value!</li>
             </ul>
           </div>
         </div>

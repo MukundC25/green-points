@@ -33,6 +33,7 @@ async function createDemoUser() {
               itemType: 'Smartphone',
               condition: 'Working',
               quantity: 1,
+              weight: 0.5,
               userFrequency: 'Regular'
             }
           },
@@ -45,6 +46,7 @@ async function createDemoUser() {
               itemType: 'Battery',
               condition: 'Working',
               quantity: 2,
+              weight: 1.0,
               userFrequency: 'Regular'
             }
           },
@@ -59,6 +61,10 @@ async function createDemoUser() {
         totalRedeemed: 25
       },
       userFrequency: 'Regular',
+      badges: ['Welcome', 'Eco Hero', 'Regular Recycler'],
+      totalItemsRecycled: 15,
+      totalWeightRecycled: 12.5,
+      referralCode: 'DEMO2024',
       profile: {
         phone: '+1234567890',
         address: '123 Green Street',
