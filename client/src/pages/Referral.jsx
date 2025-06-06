@@ -29,25 +29,25 @@ const Referral = () => {
   const shareOptions = [
     {
       name: 'WhatsApp',
-      icon: '📱',
+      iconPath: '/icons/whatsapp.svg',
       url: `https://wa.me/?text=Join Green Points and earn rewards for recycling e-waste! Use my referral code: ${referralCode} or click: ${referralLink}`,
       color: 'bg-green-500 hover:bg-green-600'
     },
     {
-      name: 'Twitter',
-      icon: '🐦',
-      url: `https://twitter.com/intent/tweet?text=Join me on Green Points - earn rewards for recycling e-waste! Use code: ${referralCode}&url=${referralLink}`,
-      color: 'bg-blue-500 hover:bg-blue-600'
+      name: 'X',
+      iconPath: '/icons/x-twitter.svg',
+      url: `https://x.com/intent/tweet?text=Join me on Green Points - earn rewards for recycling e-waste! Use code: ${referralCode}&url=${referralLink}`,
+      color: 'bg-black hover:bg-gray-800'
     },
     {
       name: 'Facebook',
-      icon: '📘',
+      iconPath: '/icons/facebook.svg',
       url: `https://www.facebook.com/sharer/sharer.php?u=${referralLink}`,
       color: 'bg-blue-600 hover:bg-blue-700'
     },
     {
       name: 'Email',
-      icon: '📧',
+      iconPath: '/icons/email.svg',
       url: `mailto:?subject=Join Green Points&body=Hi! I'm using Green Points to earn rewards for recycling e-waste. Join me using my referral code: ${referralCode} or click: ${referralLink}`,
       color: 'bg-gray-600 hover:bg-gray-700'
     }
@@ -137,10 +137,26 @@ const Referral = () => {
               href={option.url}
               target="_blank"
               rel="noopener noreferrer"
-              className={`${option.color} text-white p-4 rounded-lg text-center hover:transform hover:scale-105 transition-all`}
+              className={`${option.color} text-white p-4 rounded-lg text-center hover:transform hover:scale-105 transition-all shadow-md`}
             >
-              <div className="text-2xl mb-2">{option.icon}</div>
-              <div className="font-medium">{option.name}</div>
+              <div className="flex justify-center mb-3">
+                <img
+                  src={option.iconPath}
+                  alt={`${option.name} icon`}
+                  className="w-8 h-8 object-contain filter brightness-0 invert"
+                  onError={(e) => {
+                    // Fallback to emoji if image fails to load
+                    e.target.style.display = 'none';
+                    e.target.nextSibling.style.display = 'block';
+                  }}
+                />
+                <div className="text-2xl hidden" style={{ display: 'none' }}>
+                  {option.name === 'WhatsApp' ? '📱' :
+                   option.name === 'X' ? '𝕏' :
+                   option.name === 'Facebook' ? '📘' : '📧'}
+                </div>
+              </div>
+              <div className="font-medium text-sm">{option.name}</div>
             </a>
           ))}
         </div>
