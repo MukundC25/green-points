@@ -1,32 +1,45 @@
 const express = require('express');
 const User = require('../models/User');
 const { authenticateToken } = require('../middleware/auth');
-const { 
-  calculateGreenPoints, 
-  getPointsBreakdown, 
-  validatePointsData 
+const {
+  calculateGreenPoints,
+  getPointsBreakdown,
+  validatePointsData
 } = require('../utils/pointsCalculator');
+const mlService = require('../services/mlService');
 
 const router = express.Router();
 
 /**
  * POST /api/points/submit
- * Submit e-waste and earn Green Points
+ * Submit e-waste and earn Green Points (AI-powered)
  */
 router.post('/submit', authenticateToken, async (req, res) => {
   try {
-    const { type, condition, quantity, weight, description, imageUrl } = req.body;
+    const { type, condition, quantity, weight, description, imageUrl, brand, age } = req.body;
 
-    // Prepare data for points calculation
+    // Prepare data for ML prediction
+    const itemData = {
+      type,
+      condition,
+      quantity: parseInt(quantity) || 1,
+      weight: weight ? parseFloat(weight) : 0,
+      brand: brand || 'Generic',
+      age: age || 1,
+      userFrequency: req.user.userFrequency,
+      description,
+      imageUrl
+    };
+
+    // Validate input data
     const pointsData = {
       type,
       condition,
-      quantity: parseInt(quantity),
+      quantity: parseInt(quantity) || 1,
       weight: weight ? parseFloat(weight) : 0,
       userFrequency: req.user.userFrequency
     };
 
-    // Validate input data
     const validationErrors = validatePointsData(pointsData);
     if (validationErrors.length > 0) {
       return res.status(400).json({
@@ -35,20 +48,38 @@ router.post('/submit', authenticateToken, async (req, res) => {
       });
     }
 
-    // Calculate points
-    const points = calculateGreenPoints(pointsData);
-    const breakdown = getPointsBreakdown(pointsData);
+    // Get AI prediction for points and price
+    let prediction;
+    try {
+      prediction = await mlService.predictPoints(itemData);
+      console.log('✅ ML prediction successful:', prediction.source);
+    } catch (mlError) {
+      console.warn('⚠️ ML prediction failed, using fallback:', mlError.message);
+      // Fallback is handled inside mlService
+      prediction = await mlService.predictPoints(itemData);
+    }
+
+    const points = prediction.greenPoints;
+    const estimatedPrice = prediction.estimatedPrice;
 
     // Add points to user's wallet
     const source = `Sold ${type}`;
     const metadata = {
       itemType: type,
       condition,
-      quantity: parseInt(quantity),
+      quantity: parseInt(quantity) || 1,
       weight: weight ? parseFloat(weight) : 0,
+      brand: brand || 'Generic',
+      age: age || 1,
       userFrequency: req.user.userFrequency,
       description,
-      imageUrl
+      imageUrl,
+      estimatedPrice,
+      mlPrediction: {
+        source: prediction.source,
+        confidence: prediction.confidence,
+        modelVersion: prediction.modelVersion
+      }
     };
 
     req.user.addPoints(points, source, metadata);
@@ -57,7 +88,10 @@ router.post('/submit', authenticateToken, async (req, res) => {
     res.json({
       message: `You've earned ${points} Green Points!`,
       points,
-      breakdown,
+      estimatedPrice,
+      breakdown: prediction.breakdown,
+      confidence: prediction.confidence,
+      predictionSource: prediction.source,
       newBalance: req.user.greenWallet.balance,
       userFrequency: req.user.userFrequency,
       transaction: {
@@ -266,17 +300,28 @@ router.get('/badges', authenticateToken, async (req, res) => {
 
 router.post('/calculate', authenticateToken, async (req, res) => {
   try {
-    const { type, condition, quantity, weight } = req.body;
+    const { type, condition, quantity, weight, brand, age } = req.body;
 
-    const pointsData = {
+    // Prepare data for ML prediction
+    const itemData = {
       type,
       condition,
-      quantity: parseInt(quantity),
+      quantity: parseInt(quantity) || 1,
       weight: weight ? parseFloat(weight) : 0,
+      brand: brand || 'Generic',
+      age: age || 1,
       userFrequency: req.user.userFrequency
     };
 
     // Validate input data
+    const pointsData = {
+      type,
+      condition,
+      quantity: parseInt(quantity) || 1,
+      weight: weight ? parseFloat(weight) : 0,
+      userFrequency: req.user.userFrequency
+    };
+
     const validationErrors = validatePointsData(pointsData);
     if (validationErrors.length > 0) {
       return res.status(400).json({
@@ -285,19 +330,63 @@ router.post('/calculate', authenticateToken, async (req, res) => {
       });
     }
 
-    const points = calculateGreenPoints(pointsData);
-    const breakdown = getPointsBreakdown(pointsData);
+    // Get AI prediction
+    let prediction;
+    try {
+      prediction = await mlService.predictPoints(itemData);
+    } catch (error) {
+      console.warn('ML prediction failed, using fallback:', error.message);
+      // Fallback is handled inside mlService
+      prediction = await mlService.predictPoints(itemData);
+    }
 
     res.json({
-      estimatedPoints: points,
-      breakdown,
-      userFrequency: req.user.userFrequency
+      estimatedPoints: prediction.greenPoints,
+      estimatedPrice: prediction.estimatedPrice,
+      breakdown: prediction.breakdown,
+      confidence: prediction.confidence,
+      predictionSource: prediction.source,
+      userFrequency: req.user.userFrequency,
+      metadata: prediction.metadata
     });
 
   } catch (error) {
     console.error('Points calculation error:', error);
     res.status(500).json({
       message: 'Failed to calculate points',
+      error: error.message
+    });
+  }
+});
+
+/**
+ * GET /api/points/ml-status
+ * Get ML service health and model information
+ */
+router.get('/ml-status', authenticateToken, async (req, res) => {
+  try {
+    const health = await mlService.checkHealth();
+
+    let modelInfo = null;
+    if (health.status === 'healthy') {
+      try {
+        modelInfo = await mlService.getModelInfo();
+      } catch (error) {
+        console.warn('Failed to get model info:', error.message);
+      }
+    }
+
+    res.json({
+      mlService: health,
+      modelInfo,
+      fallbackEnabled: mlService.fallbackEnabled,
+      timestamp: new Date().toISOString()
+    });
+
+  } catch (error) {
+    console.error('ML status check error:', error);
+    res.status(500).json({
+      message: 'Failed to check ML service status',
       error: error.message
     });
   }
