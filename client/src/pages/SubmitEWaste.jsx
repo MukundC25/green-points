@@ -8,7 +8,11 @@ import toast from 'react-hot-toast';
 const SubmitEWaste = () => {
   const [formData, setFormData] = useState({
     type: '',
+    brand: '',
     condition: '',
+    age: '',
+    storage: '',
+    screenSize: '',
     quantity: 1,
     weight: '',
     description: '',
@@ -18,6 +22,7 @@ const SubmitEWaste = () => {
   const [breakdown, setBreakdown] = useState(null);
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [estimatedPrice, setEstimatedPrice] = useState(null);
   const { user, refreshUser } = useAuth();
   const navigate = useNavigate();
 
@@ -66,6 +71,7 @@ const SubmitEWaste = () => {
       
       setEstimatedPoints(response.estimatedPoints);
       setBreakdown(response.breakdown);
+      setEstimatedPrice(response.estimatedPrice || null);
     } catch (error) {
       console.error('Failed to calculate points:', error);
       toast.error('Failed to calculate points');
@@ -145,6 +151,25 @@ const SubmitEWaste = () => {
                 </select>
               </div>
 
+              {/* Brand */}
+              {formData.type && (
+                <div>
+                  <label htmlFor="brand" className="block text-sm font-medium text-gray-700 mb-2">
+                    Brand *
+                  </label>
+                  <input
+                    id="brand"
+                    name="brand"
+                    type="text"
+                    required
+                    value={formData.brand}
+                    onChange={handleChange}
+                    className="input"
+                    placeholder="e.g., Apple, Samsung, Dell"
+                  />
+                </div>
+              )}
+
               {/* Condition */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -170,6 +195,28 @@ const SubmitEWaste = () => {
                   ))}
                 </div>
               </div>
+
+              {/* Age */}
+              {formData.type && (
+                <div>
+                  <label htmlFor="age" className="block text-sm font-medium text-gray-700 mb-2">
+                    Age (years) *
+                  </label>
+                  <input
+                    id="age"
+                    name="age"
+                    type="number"
+                    min="0"
+                    max="20"
+                    step="0.1"
+                    required
+                    value={formData.age}
+                    onChange={handleChange}
+                    className="input"
+                    placeholder="e.g., 2.5"
+                  />
+                </div>
+              )}
 
               {/* Quantity */}
               <div>
@@ -210,6 +257,48 @@ const SubmitEWaste = () => {
                   💡 Earn +2 points per kg! Heavier items get bonus points.
                 </p>
               </div>
+
+              {/* Storage */}
+              {['Smartphone','Laptop','Tablet'].includes(formData.type) && (
+                <div>
+                  <label htmlFor="storage" className="block text-sm font-medium text-gray-700 mb-2">
+                    Storage (GB) {['Smartphone','Laptop','Tablet'].includes(formData.type) ? '*' : '(optional)'}
+                  </label>
+                  <input
+                    id="storage"
+                    name="storage"
+                    type="number"
+                    min="0"
+                    step="1"
+                    value={formData.storage}
+                    onChange={handleChange}
+                    className="input"
+                    placeholder="e.g., 128"
+                    required={['Smartphone','Laptop','Tablet'].includes(formData.type)}
+                  />
+                </div>
+              )}
+
+              {/* Screen Size */}
+              {['Smartphone','Laptop','Tablet','Monitor'].includes(formData.type) && (
+                <div>
+                  <label htmlFor="screenSize" className="block text-sm font-medium text-gray-700 mb-2">
+                    Screen Size (inches) {['Smartphone','Laptop','Tablet','Monitor'].includes(formData.type) ? '*' : '(optional)'}
+                  </label>
+                  <input
+                    id="screenSize"
+                    name="screenSize"
+                    type="number"
+                    min="0"
+                    step="0.1"
+                    value={formData.screenSize}
+                    onChange={handleChange}
+                    className="input"
+                    placeholder="e.g., 6.1"
+                    required={['Smartphone','Laptop','Tablet','Monitor'].includes(formData.type)}
+                  />
+                </div>
+              )}
 
               {/* Description */}
               <div>
@@ -298,6 +387,18 @@ const SubmitEWaste = () => {
                   </div>
                   <p className="text-gray-600">Estimated Green Points</p>
                 </div>
+
+                {estimatedPrice !== null && (
+                  <div className="text-center mb-4">
+                    <div className="flex items-center justify-center space-x-2 mb-2">
+                      <Coins className="h-8 w-8 text-yellow-500" />
+                      <span className="text-2xl font-bold text-yellow-600">
+                        ₹{estimatedPrice}
+                      </span>
+                    </div>
+                    <p className="text-gray-600">Estimated Price</p>
+                  </div>
+                )}
 
                 {breakdown && (
                   <div className="space-y-2 text-sm">

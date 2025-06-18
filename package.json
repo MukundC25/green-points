@@ -11,10 +11,18 @@
     "start": "cd server && npm start",
     "install-all": "npm install && cd server && npm install && cd ../client && npm install"
   },
-  "keywords": ["e-waste", "rewards", "green-points", "sustainability"],
+  "keywords": [
+    "e-waste",
+    "rewards",
+    "green-points",
+    "sustainability"
+  ],
   "author": "Mukund Chavan",
   "license": "MIT",
   "devDependencies": {
     "concurrently": "^8.2.2"
+  },
+  "dependencies": {
+    "colors": "^1.4.0"
   }
 }

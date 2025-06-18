@@ -129,7 +129,7 @@ echo "🔄 Backend started with PID: $BACKEND_PID"
 cd ..
 
 # Wait for backend to be ready
-if ! wait_for_service "http://localhost:5000/api/health" "Backend"; then
+if ! wait_for_service "http://localhost:3001/api/health" "Backend"; then
     echo "❌ Backend failed to start"
     kill $ML_PID $BACKEND_PID 2>/dev/null
     exit 1
@@ -178,7 +178,7 @@ echo ""
 echo "🎉 Green Points System is running!"
 echo "=================================="
 echo "🌐 Frontend:    http://localhost:5173"
-echo "🖥️  Backend:     http://localhost:5000"
+echo "🖥️  Backend:     http://localhost:3001"
 echo "🧠 ML Service:  http://localhost:8000"
 echo "📊 ML Docs:     http://localhost:8000/docs"
 echo ""

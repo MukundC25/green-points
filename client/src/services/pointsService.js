@@ -3,7 +3,13 @@ import api from './authService';
 export const pointsService = {
   // Submit e-waste and earn points
   submitEWaste: async (ewasteData) => {
-    const response = await api.post('/points/submit', ewasteData);
+    const response = await api.post('/points/submit', {
+      ...ewasteData,
+      brand: ewasteData.brand,
+      age: ewasteData.age,
+      storage: ewasteData.storage,
+      screenSize: ewasteData.screenSize
+    });
     return response.data;
   },
 
@@ -28,7 +34,13 @@ export const pointsService = {
 
   // Calculate points (preview)
   calculatePoints: async (ewasteData) => {
-    const response = await api.post('/points/calculate', ewasteData);
+    const response = await api.post('/points/calculate', {
+      ...ewasteData,
+      brand: ewasteData.brand,
+      age: ewasteData.age,
+      storage: ewasteData.storage,
+      screenSize: ewasteData.screenSize
+    });
     return response.data;
   },
 
