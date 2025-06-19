@@ -392,6 +392,45 @@ router.get('/ml-status', authenticateToken, async (req, res) => {
   }
 });
 
+// GET /api/points/pickup-history
+router.get('/pickup-history', authenticateToken, async (req, res) => {
+  try {
+    let history = req.user.greenWallet.history.filter(
+      t => t.type === 'credit' && t.metadata && t.metadata.itemType
+    );
+    history.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    res.json({ history });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to get pickup history', error: error.message });
+  }
+});
+
+// GET /api/points/redemption-history
+router.get('/redemption-history', authenticateToken, async (req, res) => {
+  try {
+    let history = req.user.greenWallet.history.filter(
+      t => t.type === 'debit'
+    );
+    history.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    res.json({ history });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to get redemption history', error: error.message });
+  }
+});
+
+// GET /api/points/earned-history
+router.get('/earned-history', authenticateToken, async (req, res) => {
+  try {
+    let history = req.user.greenWallet.history.filter(
+      t => t.type === 'credit'
+    );
+    history.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    res.json({ history });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to get earned history', error: error.message });
+  }
+});
+
 // Helper functions
 function formatTimeRemaining(milliseconds) {
   if (milliseconds <= 0) return 'Expired';

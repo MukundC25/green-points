@@ -8,11 +8,11 @@ A comprehensive e-waste rewards system that incentivizes responsible electronic 
 ## 🌟 Features
 
 ### Core Functionality
-- **E-Waste Submission**: Users can submit electronic waste with photos and details
+- **E-Waste Submission**: Users can submit electronic waste with photos (image upload), detailed weight (with range and exact value), and select pickup day/time based on weight
 - **Green Points Calculation**: Intelligent points calculation based on item type, condition, quantity, and user frequency
 - **Digital Wallet**: Secure storage and management of Green Points
 - **Rewards Redemption**: Redeem points for eco-friendly products and discounts
-- **Transaction History**: Complete audit trail of all points transactions
+- **Transaction History**: Complete audit trail of all points transactions, with robust backend endpoints and original, filterable UI
 
 ### User Experience
 - **Responsive Design**: Works seamlessly on desktop and mobile devices
@@ -26,6 +26,7 @@ A comprehensive e-waste rewards system that incentivizes responsible electronic 
 - **MongoDB Integration**: Robust data storage with user wallet schema
 - **Real-time Validation**: Input validation and error handling
 - **Export Functionality**: CSV export of transaction history
+- **Robust Error Handling**: Improved handling for multiple submissions, session expiry, and backend errors
 
 ## 🛠️ Tech Stack
 
@@ -65,6 +66,7 @@ A comprehensive e-waste rewards system that incentivizes responsible electronic 
 - **Fallback System**: Graceful degradation to hardcoded rules when ML unavailable
 - **Real-time Predictions**: FastAPI service provides instant price/points estimates
 - **Model Monitoring**: Track prediction accuracy and model performance
+- **History Endpoints**: Dedicated endpoints for pickup, redemption, and earned histories
 
 ## 🏗️ Architecture
 

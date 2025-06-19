@@ -55,6 +55,20 @@ export const pointsService = {
     const response = await api.get('/points/badges');
     return response.data;
   },
+
+  // Add/fix history fetchers for TransactionHistory page
+  getPickupHistory: async () => {
+    const response = await api.get('/points/pickup-history');
+    return response.data;
+  },
+  getRedemptionHistory: async () => {
+    const response = await api.get('/points/redemption-history');
+    return response.data;
+  },
+  getEarnedHistory: async () => {
+    const response = await api.get('/points/earned-history');
+    return response.data;
+  },
 };
 
 export const userService = {

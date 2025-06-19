@@ -210,6 +210,13 @@ class ModelMonitor:
         pass
 ```
 
+## Phase 5: Robustness & UI/UX Improvements
+
+- Added backend endpoints: `/pickup-history`, `/redemption-history`, `/earned-history` for robust transaction history
+- Frontend and backend now handle multiple submissions and session expiry gracefully
+- Submit E-Waste page: improved weight, day/time, and image upload logic
+- Transaction History: reverted to original, filterable UI with robust backend endpoints
+
 ## Benefits of This Approach
 
 1. **Scalability**: Handles new product types automatically

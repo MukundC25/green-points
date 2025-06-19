@@ -21,16 +21,13 @@ const TransactionHistory = () => {
         page: currentPage,
         limit: 10
       };
-      
       if (filter !== 'all') {
         params.type = filter;
       }
-
       const response = await pointsService.getHistory(params);
       setTransactions(response.history);
       setPagination(response.pagination);
     } catch (error) {
-      console.error('Failed to fetch transaction history:', error);
       toast.error('Failed to load transaction history');
     } finally {
       setLoading(false);
@@ -167,7 +164,6 @@ const TransactionHistory = () => {
             transactions.map((transaction, index) => {
               const Icon = getTransactionIcon(transaction.type);
               const colorClass = getTransactionColor(transaction.type);
-              
               return (
                 <div key={index} className="p-6 hover:bg-gray-50 transition-colors">
                   <div className="flex items-center justify-between">
@@ -204,7 +200,6 @@ const TransactionHistory = () => {
                         </div>
                       </div>
                     </div>
-                    
                     <div className="text-right">
                       <div className={`flex items-center space-x-1 ${
                         transaction.type === 'credit' ? 'text-green-600' : 'text-red-600'

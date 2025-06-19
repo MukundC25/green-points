@@ -42,6 +42,7 @@ I've successfully transformed your Green Points system from hardcoded rules to a
 - ✅ **Enhanced `/submit` endpoint** with ML predictions
 - ✅ **Enhanced `/calculate` endpoint** with AI pricing
 - ✅ **New `/ml-status` endpoint** for service monitoring
+- ✅ **New `/pickup-history`, `/redemption-history`, `/earned-history` endpoints for robust transaction history
 - ✅ **Backward compatibility** with existing frontend
 - ✅ **Rich metadata** storage for predictions
 
@@ -103,6 +104,41 @@ Based on the synthetic but realistic dataset:
 - If ML service is down: **Graceful degradation** to hardcoded rules
 - If confidence < 0.7: **Hybrid approach** combining ML + rules
 - **Always functional**: System never breaks due to ML issues
+
+### **New ML-Powered Endpoints**
+```javascript
+// Enhanced points calculation with AI
+POST /api/points/calculate
+{
+  "type": "smartphone",
+  "brand": "Samsung", 
+  "condition": "Working",
+  "age": 2,
+  "weight": 0.18
+}
+
+// Response includes ML predictions
+{
+  "estimatedPoints": 145,
+  "estimatedPrice": 8500,
+  "confidence": 0.87,
+  "predictionSource": "ml_model",
+  "breakdown": { ... }
+}
+
+// ML service health monitoring
+GET /api/points/ml-status
+{
+  "mlService": { "status": "healthy" },
+  "modelInfo": { "version": "1.0.0" }
+}
+```
+
+## 🛡️ **Robustness & UX Improvements**
+
+- Frontend and backend now handle multiple submissions and session expiry gracefully
+- Submit E-Waste page: improved weight, day/time, and image upload logic
+- Transaction History: reverted to original, filterable UI with robust backend endpoints
 
 ## 🧪 **Testing & Validation**
 

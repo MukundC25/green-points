@@ -8,15 +8,11 @@ import toast from 'react-hot-toast';
 const SubmitEWaste = () => {
   const [formData, setFormData] = useState({
     type: '',
-    brand: '',
     condition: '',
-    age: '',
-    storage: '',
-    screenSize: '',
     quantity: 1,
     weight: '',
     description: '',
-    imageUrl: ''
+    imageFile: null
   });
   const [estimatedPoints, setEstimatedPoints] = useState(null);
   const [breakdown, setBreakdown] = useState(null);
@@ -25,6 +21,15 @@ const SubmitEWaste = () => {
   const [estimatedPrice, setEstimatedPrice] = useState(null);
   const { user, refreshUser } = useAuth();
   const navigate = useNavigate();
+  const [weightRange, setWeightRange] = useState('');
+  const [exactWeight, setExactWeight] = useState('');
+  const [pickupSlot, setPickupSlot] = useState('');
+  const [pickupDate, setPickupDate] = useState('');
+  const [pickupTime, setPickupTime] = useState('');
+  const [items, setItems] = useState([]);
+  const totalWeight = items.reduce((sum, item) => sum + parseFloat(item.weight || 0), 0);
+  const canSubmitPickup = totalWeight >= 5;
+  const [selectedDay, setSelectedDay] = useState('');
 
   const itemTypes = [
     'Smartphone',
@@ -40,10 +45,9 @@ const SubmitEWaste = () => {
     'Other'
   ];
 
-  const conditions = [
-    { value: 'Working', label: 'Working', description: 'Device is fully functional' },
-    { value: 'Repairable', label: 'Repairable', description: 'Device has minor issues but can be fixed' },
-    { value: 'Dead', label: 'Dead', description: 'Device is not working and cannot be repaired' }
+  const conditionOptions = [
+    { value: 'Working', label: 'Working', note: 'Device is fully functional' },
+    { value: 'Not Working', label: 'Not Working', note: 'Device is not working and cannot be repaired' }
   ];
 
   const handleChange = (e) => {
@@ -66,7 +70,7 @@ const SubmitEWaste = () => {
         type: formData.type,
         condition: formData.condition,
         quantity: formData.quantity,
-        weight: formData.weight
+        weight: exactWeight || formData.weight
       });
       
       setEstimatedPoints(response.estimatedPoints);
@@ -82,23 +86,26 @@ const SubmitEWaste = () => {
 
   useEffect(() => {
     calculatePoints();
-  }, [formData.type, formData.condition, formData.quantity, formData.weight]);
+  }, [formData.type, formData.condition, formData.quantity, exactWeight]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    if (!formData.type || !formData.condition) {
+    if (!formData.type || !formData.condition || !weightRange || !exactWeight) {
       toast.error('Please fill in all required fields');
       return;
     }
 
     setSubmitting(true);
     try {
-      const response = await pointsService.submitEWaste(formData);
+      const submissionData = {
+        ...formData,
+        weight: exactWeight
+      };
+      const response = await pointsService.submitEWaste(submissionData);
       
       await refreshUser(); // Update user data
       
-      toast.success(response.message);
+      toast.success(`${response.message} You earned ${response.points} points and estimated price is ₹${response.estimatedPrice || estimatedPrice || 'N/A'}`);
       
       // Show success modal or redirect
       setTimeout(() => {
@@ -112,6 +119,14 @@ const SubmitEWaste = () => {
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    setFormData({
+      ...formData,
+      imageFile: file
+    });
   };
 
   return (
@@ -151,32 +166,13 @@ const SubmitEWaste = () => {
                 </select>
               </div>
 
-              {/* Brand */}
-              {formData.type && (
-                <div>
-                  <label htmlFor="brand" className="block text-sm font-medium text-gray-700 mb-2">
-                    Brand *
-                  </label>
-                  <input
-                    id="brand"
-                    name="brand"
-                    type="text"
-                    required
-                    value={formData.brand}
-                    onChange={handleChange}
-                    className="input"
-                    placeholder="e.g., Apple, Samsung, Dell"
-                  />
-                </div>
-              )}
-
               {/* Condition */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Condition *
                 </label>
                 <div className="space-y-3">
-                  {conditions.map((condition) => (
+                  {conditionOptions.map((condition) => (
                     <label key={condition.value} className="flex items-start space-x-3 cursor-pointer">
                       <input
                         type="radio"
@@ -189,34 +185,12 @@ const SubmitEWaste = () => {
                       />
                       <div>
                         <div className="font-medium text-gray-900">{condition.label}</div>
-                        <div className="text-sm text-gray-500">{condition.description}</div>
+                        <div className="text-xs text-gray-500 mt-0.5">{condition.note}</div>
                       </div>
                     </label>
                   ))}
                 </div>
               </div>
-
-              {/* Age */}
-              {formData.type && (
-                <div>
-                  <label htmlFor="age" className="block text-sm font-medium text-gray-700 mb-2">
-                    Age (years) *
-                  </label>
-                  <input
-                    id="age"
-                    name="age"
-                    type="number"
-                    min="0"
-                    max="20"
-                    step="0.1"
-                    required
-                    value={formData.age}
-                    onChange={handleChange}
-                    className="input"
-                    placeholder="e.g., 2.5"
-                  />
-                </div>
-              )}
 
               {/* Quantity */}
               <div>
@@ -239,66 +213,25 @@ const SubmitEWaste = () => {
 
               {/* Weight */}
               <div>
-                <label htmlFor="weight" className="block text-sm font-medium text-gray-700 mb-2">
-                  Weight (kg) - Optional
-                </label>
-                <input
-                  id="weight"
-                  name="weight"
-                  type="number"
-                  min="0"
-                  step="0.1"
-                  value={formData.weight}
-                  onChange={handleChange}
-                  className="input"
-                  placeholder="Weight in kilograms (e.g., 2.5)"
-                />
-                <p className="mt-1 text-sm text-gray-500">
-                  💡 Earn +2 points per kg! Heavier items get bonus points.
-                </p>
-              </div>
-
-              {/* Storage */}
-              {['Smartphone','Laptop','Tablet'].includes(formData.type) && (
-                <div>
-                  <label htmlFor="storage" className="block text-sm font-medium text-gray-700 mb-2">
-                    Storage (GB) {['Smartphone','Laptop','Tablet'].includes(formData.type) ? '*' : '(optional)'}
-                  </label>
-                  <input
-                    id="storage"
-                    name="storage"
-                    type="number"
-                    min="0"
-                    step="1"
-                    value={formData.storage}
-                    onChange={handleChange}
-                    className="input"
-                    placeholder="e.g., 128"
-                    required={['Smartphone','Laptop','Tablet'].includes(formData.type)}
-                  />
+                <label className="block text-sm font-medium text-gray-700 mb-2">Weight *</label>
+                <div className="flex space-x-2 mb-2">
+                  <button type="button" className={`rounded-full px-4 py-2 font-medium transition-colors focus:outline-none ${weightRange === '<5' ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-primary-100'}`} onClick={() => setWeightRange('<5')}>Weight less than 5 kg</button>
+                  <button type="button" className={`rounded-full px-4 py-2 font-medium transition-colors focus:outline-none ${weightRange === '5-20' ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-primary-100'}`} onClick={() => setWeightRange('5-20')}>Weight between 5 to 20 kg</button>
+                  <button type="button" className={`rounded-full px-4 py-2 font-medium transition-colors focus:outline-none ${weightRange === '>20' ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-primary-100'}`} onClick={() => setWeightRange('>20')}>Weight more than 20 kg</button>
                 </div>
-              )}
-
-              {/* Screen Size */}
-              {['Smartphone','Laptop','Tablet','Monitor'].includes(formData.type) && (
-                <div>
-                  <label htmlFor="screenSize" className="block text-sm font-medium text-gray-700 mb-2">
-                    Screen Size (inches) {['Smartphone','Laptop','Tablet','Monitor'].includes(formData.type) ? '*' : '(optional)'}
-                  </label>
+                {weightRange && (
                   <input
-                    id="screenSize"
-                    name="screenSize"
                     type="number"
-                    min="0"
+                    min="0.1"
                     step="0.1"
-                    value={formData.screenSize}
-                    onChange={handleChange}
+                    required
                     className="input"
-                    placeholder="e.g., 6.1"
-                    required={['Smartphone','Laptop','Tablet','Monitor'].includes(formData.type)}
+                    placeholder="Enter exact weight in kg"
+                    value={exactWeight}
+                    onChange={e => setExactWeight(e.target.value)}
                   />
-                </div>
-              )}
+                )}
+              </div>
 
               {/* Description */}
               <div>
@@ -316,35 +249,60 @@ const SubmitEWaste = () => {
                 />
               </div>
 
-              {/* Image URL */}
+              {/* Image Upload */}
               <div>
-                <label htmlFor="imageUrl" className="block text-sm font-medium text-gray-700 mb-2">
-                  Image URL (Optional)
+                <label htmlFor="imageFile" className="block text-sm font-medium text-gray-700 mb-2">
+                  Image (Optional)
                 </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Upload className="h-5 w-5 text-gray-400" />
-                  </div>
-                  <input
-                    id="imageUrl"
-                    name="imageUrl"
-                    type="url"
-                    value={formData.imageUrl}
-                    onChange={handleChange}
-                    className="input pl-10"
-                    placeholder="https://example.com/image.jpg"
-                  />
-                </div>
-                <p className="mt-1 text-sm text-gray-500">
-                  Provide a URL to an image of your e-waste item
-                </p>
+                <input
+                  id="imageFile"
+                  name="imageFile"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="input"
+                />
               </div>
+
+              {/* Pickup Slot Selection */}
+              {weightRange && exactWeight && parseFloat(exactWeight) >= 5 && (
+                <div className="mt-4">
+                  <div className="mb-2 font-semibold text-gray-700">Select Pickup Day</div>
+                  <div className="flex space-x-2 mb-2">
+                    {parseFloat(exactWeight) > 20 ? (
+                      <button type="button" className={`rounded-full px-4 py-2 font-medium transition-colors focus:outline-none ${selectedDay === 'Sunday' ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-primary-100'}`} onClick={() => setSelectedDay('Sunday')}>Sunday</button>
+                    ) : (
+                      <>
+                        <button type="button" className={`rounded-full px-4 py-2 font-medium transition-colors focus:outline-none ${selectedDay === 'Wednesday' ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-primary-100'}`} onClick={() => setSelectedDay('Wednesday')}>Wednesday</button>
+                        <button type="button" className={`rounded-full px-4 py-2 font-medium transition-colors focus:outline-none ${selectedDay === 'Friday' ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-primary-100'}`} onClick={() => setSelectedDay('Friday')}>Friday</button>
+                      </>
+                    )}
+                  </div>
+                  {selectedDay && (
+                    <div className="mb-2 font-semibold text-gray-700">Select Pickup Time</div>
+                  )}
+                  {selectedDay && (
+                    <div className="flex space-x-2 mb-4">
+                      {['10am-1pm', '1pm-4pm', '4pm-7pm'].map((slot) => (
+                        <button
+                          key={slot}
+                          type="button"
+                          className={`rounded-full px-4 py-2 font-medium transition-colors focus:outline-none ${pickupTime === slot ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-primary-100'}`}
+                          onClick={() => setPickupTime(slot)}
+                        >
+                          {slot}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Submit Button */}
               <button
                 type="submit"
-                disabled={submitting || !formData.type || !formData.condition}
-                className="w-full btn-primary flex items-center justify-center"
+                disabled={submitting || !formData.type || !formData.condition || !weightRange || !exactWeight || parseFloat(exactWeight) < 5 || !selectedDay || !pickupTime}
+                className="w-full btn-primary flex items-center justify-center mt-2"
               >
                 {submitting ? (
                   <>
@@ -354,7 +312,7 @@ const SubmitEWaste = () => {
                 ) : (
                   <>
                     <CheckCircle className="h-5 w-5 mr-2" />
-                    Submit E-Waste
+                    Submit for Pickup
                   </>
                 )}
               </button>
