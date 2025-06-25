@@ -16,6 +16,87 @@ const router = express.Router();
  */
 router.post('/submit', authenticateToken, async (req, res) => {
   try {
+    // Support batch submission: if req.body.items is an array, process all
+    if (Array.isArray(req.body.items)) {
+      const items = req.body.items;
+      let totalPoints = 0;
+      let totalEstimatedPrice = 0;
+      let itemResults = [];
+      for (const item of items) {
+        // Prepare data for ML prediction
+        const itemData = {
+          type: item.type,
+          condition: item.condition,
+          quantity: parseInt(item.quantity) || 1,
+          weight: item.weight ? parseFloat(item.weight) : 0,
+          brand: item.brand || 'Generic',
+          age: item.age || 1,
+          userFrequency: req.user.userFrequency,
+          description: item.description,
+          imageUrl: item.imageUrl
+        };
+        // Validate input data
+        const pointsData = {
+          type: item.type,
+          condition: item.condition,
+          quantity: parseInt(item.quantity) || 1,
+          weight: item.weight ? parseFloat(item.weight) : 0,
+          userFrequency: req.user.userFrequency
+        };
+        const validationErrors = validatePointsData(pointsData);
+        if (validationErrors.length > 0) {
+          return res.status(400).json({
+            message: 'Validation failed',
+            errors: validationErrors
+          });
+        }
+        // Get AI prediction for points and price
+        let prediction;
+        try {
+          prediction = await mlService.predictPoints(itemData);
+        } catch (mlError) {
+          prediction = await mlService.predictPoints(itemData);
+        }
+        const points = prediction.greenPoints;
+        const estimatedPrice = prediction.estimatedPrice;
+        totalPoints += points;
+        totalEstimatedPrice += estimatedPrice;
+        itemResults.push({
+          ...itemData,
+          points,
+          estimatedPrice,
+          breakdown: prediction.breakdown,
+          confidence: prediction.confidence,
+          predictionSource: prediction.source
+        });
+      }
+      // Add total points to user's wallet as a single pickup
+      const source = `Batch Pickup (${items.length} items)`;
+      const metadata = {
+        items: itemResults,
+        totalPoints,
+        totalEstimatedPrice,
+        userFrequency: req.user.userFrequency
+      };
+      req.user.addPoints(totalPoints, source, metadata);
+      await req.user.save();
+      return res.json({
+        message: `You've earned ${totalPoints} Green Points for ${items.length} items!`,
+        points: totalPoints,
+        estimatedPrice: totalEstimatedPrice,
+        items: itemResults,
+        newBalance: req.user.greenWallet.balance,
+        userFrequency: req.user.userFrequency,
+        transaction: {
+          timestamp: new Date(),
+          points: totalPoints,
+          source,
+          type: 'credit',
+          metadata
+        }
+      });
+    }
+
     const { type, condition, quantity, weight, description, imageUrl, brand, age } = req.body;
 
     // Prepare data for ML prediction

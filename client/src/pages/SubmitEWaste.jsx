@@ -27,6 +27,8 @@ const SubmitEWaste = () => {
   const [pickupDate, setPickupDate] = useState('');
   const [pickupTime, setPickupTime] = useState('');
   const [items, setItems] = useState([]);
+  const [addingItem, setAddingItem] = useState(false);
+  const [showAddItemPrompt, setShowAddItemPrompt] = useState(false);
   const totalWeight = items.reduce((sum, item) => sum + parseFloat(item.weight || 0), 0);
   const canSubmitPickup = totalWeight >= 5;
   const [selectedDay, setSelectedDay] = useState('');
@@ -68,7 +70,7 @@ const SubmitEWaste = () => {
     try {
       const response = await pointsService.calculatePoints({
         type: formData.type,
-        condition: formData.condition,
+        condition: formData.condition === 'Not Working' ? 'Dead' : formData.condition,
         quantity: formData.quantity,
         weight: exactWeight || formData.weight
       });
@@ -90,34 +92,59 @@ const SubmitEWaste = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.type || !formData.condition || !weightRange || !exactWeight) {
-      toast.error('Please fill in all required fields');
+    if (weightRange === '<5') {
+      const total = items.reduce((sum, i) => sum + parseFloat(i.weight || 0), 0);
+      if (total !== 5) {
+        toast.error('Total weight must be exactly 5kg for pickup in this category');
+        return;
+      }
+      setSubmitting(true);
+      try {
+        // Submit all items as batch
+        const response = await pointsService.submitEWaste(items);
+        await refreshUser();
+        toast.success(`${response.message} You earned ${response.points} points and estimated price is ₹${response.estimatedPrice || 'N/A'}`);
+        setTimeout(() => {
+          navigate('/dashboard');
+        }, 2000);
+      } catch (error) {
+        console.error('Failed to submit e-waste:', error);
+        const message = error.response?.data?.message || 'Failed to submit e-waste';
+        toast.error(message);
+      } finally {
+        setSubmitting(false);
+      }
       return;
-    }
+    } else {
+      if (!formData.type || !formData.condition || !weightRange || !exactWeight) {
+        toast.error('Please fill in all required fields');
+        return;
+      }
 
-    setSubmitting(true);
-    try {
-      const submissionData = {
-        ...formData,
-        weight: exactWeight
-      };
-      const response = await pointsService.submitEWaste(submissionData);
-      
-      await refreshUser(); // Update user data
-      
-      toast.success(`${response.message} You earned ${response.points} points and estimated price is ₹${response.estimatedPrice || estimatedPrice || 'N/A'}`);
-      
-      // Show success modal or redirect
-      setTimeout(() => {
-        navigate('/dashboard');
-      }, 2000);
-      
-    } catch (error) {
-      console.error('Failed to submit e-waste:', error);
-      const message = error.response?.data?.message || 'Failed to submit e-waste';
-      toast.error(message);
-    } finally {
-      setSubmitting(false);
+      setSubmitting(true);
+      try {
+        const submissionData = {
+          ...formData,
+          weight: exactWeight
+        };
+        const response = await pointsService.submitEWaste(submissionData);
+        
+        await refreshUser(); // Update user data
+        
+        toast.success(`${response.message} You earned ${response.points} points and estimated price is ₹${response.estimatedPrice || estimatedPrice || 'N/A'}`);
+        
+        // Show success modal or redirect
+        setTimeout(() => {
+          navigate('/dashboard');
+        }, 2000);
+        
+      } catch (error) {
+        console.error('Failed to submit e-waste:', error);
+        const message = error.response?.data?.message || 'Failed to submit e-waste';
+        toast.error(message);
+      } finally {
+        setSubmitting(false);
+      }
     }
   };
 
@@ -128,6 +155,19 @@ const SubmitEWaste = () => {
       imageFile: file
     });
   };
+
+  // --- Button enable/disable logic ---
+  const isPickupReady = (() => {
+    if (weightRange === '<5') {
+      return items.reduce((sum, i) => sum + parseFloat(i.weight || 0), 0) >= 5 && selectedDay && pickupTime;
+    }
+    if (weightRange === 'bulk') {
+      // For bulk, require type, condition, and a minimum weight (e.g., 20kg), and pickup slot
+      return formData.type && formData.condition && exactWeight && parseFloat(exactWeight) >= 20 && selectedDay && pickupTime;
+    }
+    // For other categories
+    return formData.type && formData.condition && weightRange && exactWeight && parseFloat(exactWeight) >= 5 && selectedDay && pickupTime;
+  })();
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
@@ -215,11 +255,12 @@ const SubmitEWaste = () => {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Weight *</label>
                 <div className="flex space-x-2 mb-2">
-                  <button type="button" className={`rounded-full px-4 py-2 font-medium transition-colors focus:outline-none ${weightRange === '<5' ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-primary-100'}`} onClick={() => setWeightRange('<5')}>Weight less than 5 kg</button>
-                  <button type="button" className={`rounded-full px-4 py-2 font-medium transition-colors focus:outline-none ${weightRange === '5-20' ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-primary-100'}`} onClick={() => setWeightRange('5-20')}>Weight between 5 to 20 kg</button>
-                  <button type="button" className={`rounded-full px-4 py-2 font-medium transition-colors focus:outline-none ${weightRange === '>20' ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-primary-100'}`} onClick={() => setWeightRange('>20')}>Weight more than 20 kg</button>
+                  <button type="button" className={`rounded-full px-4 py-2 font-medium transition-colors focus:outline-none ${weightRange === '<5' ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-primary-100'}`} onClick={() => { setWeightRange('<5'); setShowAddItemPrompt(true); }}>Weight less than 5 kg</button>
+                  <button type="button" className={`rounded-full px-4 py-2 font-medium transition-colors focus:outline-none ${weightRange === '5-20' ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-primary-100'}`} onClick={() => { setWeightRange('5-20'); setShowAddItemPrompt(false); }}>Weight between 5 to 20 kg</button>
+                  <button type="button" className={`rounded-full px-4 py-2 font-medium transition-colors focus:outline-none ${weightRange === '>20' ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-primary-100'}`} onClick={() => { setWeightRange('>20'); setShowAddItemPrompt(false); }}>Weight more than 20 kg</button>
+                  <button type="button" className={`rounded-full px-4 py-2 font-medium transition-colors focus:outline-none ${weightRange === 'bulk' ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-primary-100'}`} onClick={() => { setWeightRange('bulk'); setShowAddItemPrompt(false); }}>Bulk items (Business)</button>
                 </div>
-                {weightRange && (
+                {weightRange && weightRange !== 'bulk' && (
                   <input
                     type="number"
                     min="0.1"
@@ -298,10 +339,88 @@ const SubmitEWaste = () => {
                 </div>
               )}
 
+              {/* More Items Prompt */}
+              {showAddItemPrompt && weightRange === '<5' && items.reduce((sum, i) => sum + parseFloat(i.weight || 0), 0) < 5 && (
+                <div className="mt-2">
+                  <button
+                    type="button"
+                    className="btn-outline"
+                    onClick={() => {
+                      const currentWeight = items.reduce((sum, i) => sum + parseFloat(i.weight || 0), 0);
+                      const newWeight = currentWeight + parseFloat(exactWeight || 0);
+                      if (!formData.type || !formData.condition || !exactWeight) {
+                        toast.error('Please fill all item details');
+                        return;
+                      }
+                      if (newWeight > 5) {
+                        toast.error('Total weight for <5kg category cannot exceed 5kg.');
+                        return;
+                      }
+                      setItems([...items, { ...formData, weight: exactWeight, estimatedPoints, estimatedPrice }]);
+                      // Reset form for next item
+                      setFormData({ type: '', condition: '', quantity: 1, weight: '', description: '', imageFile: null });
+                      setExactWeight('');
+                      setEstimatedPoints(null);
+                      setEstimatedPrice(null);
+                      setBreakdown(null);
+                    }}
+                    disabled={items.reduce((sum, i) => sum + parseFloat(i.weight || 0), 0) >= 5}
+                  >
+                    Add This Item
+                  </button>
+                  <div className="text-sm text-gray-500 mt-2">Add more items until total weight is exactly 5kg to enable pickup. (You cannot exceed 5kg in this category.)</div>
+                </div>
+              )}
+
+              {/* Items List */}
+              {items.length > 0 && (
+                <div className="mt-4">
+                  <h4 className="font-semibold mb-2">Items Added:</h4>
+                  <ul className="space-y-2">
+                    {items.map((item, idx) => (
+                      <li key={idx} className="border rounded p-2 flex justify-between items-center">
+                        <span>{item.type} ({item.condition}) - {item.weight}kg</span>
+                        <span className="text-primary-600 font-bold">{item.estimatedPoints} pts / ₹{item.estimatedPrice}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <div className="mt-2 font-medium">Total Weight: {items.reduce((sum, i) => sum + parseFloat(i.weight || 0), 0).toFixed(2)} kg</div>
+                </div>
+              )}
+
+              {/* For <5kg, show slot selection when total weight >= 5kg */}
+              {weightRange === '<5' && items.reduce((sum, i) => sum + parseFloat(i.weight || 0), 0) >= 5 && (
+                <div className="mt-4">
+                  <div className="mb-2 font-semibold text-gray-700">Select Pickup Day</div>
+                  <div className="flex space-x-2 mb-2">
+                    {/* For <5kg, use same slots as 5-20kg: Wednesday/Friday */}
+                    <button type="button" className={`rounded-full px-4 py-2 font-medium transition-colors focus:outline-none ${selectedDay === 'Wednesday' ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-primary-100'}`} onClick={() => setSelectedDay('Wednesday')}>Wednesday</button>
+                    <button type="button" className={`rounded-full px-4 py-2 font-medium transition-colors focus:outline-none ${selectedDay === 'Friday' ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-primary-100'}`} onClick={() => setSelectedDay('Friday')}>Friday</button>
+                  </div>
+                  {selectedDay && (
+                    <div className="mb-2 font-semibold text-gray-700">Select Pickup Time</div>
+                  )}
+                  {selectedDay && (
+                    <div className="flex space-x-2 mb-4">
+                      {['10am-1pm', '1pm-4pm', '4pm-7pm'].map((slot) => (
+                        <button
+                          key={slot}
+                          type="button"
+                          className={`rounded-full px-4 py-2 font-medium transition-colors focus:outline-none ${pickupTime === slot ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-primary-100'}`}
+                          onClick={() => setPickupTime(slot)}
+                        >
+                          {slot}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* Submit Button */}
               <button
                 type="submit"
-                disabled={submitting || !formData.type || !formData.condition || !weightRange || !exactWeight || parseFloat(exactWeight) < 5 || !selectedDay || !pickupTime}
+                disabled={submitting || !isPickupReady}
                 className="w-full btn-primary flex items-center justify-center mt-2"
               >
                 {submitting ? (
