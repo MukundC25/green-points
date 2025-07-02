@@ -117,34 +117,34 @@ const SubmitEWaste = () => {
       return;
     } else {
       if (!formData.type || !formData.condition || !weightRange || !exactWeight) {
-        toast.error('Please fill in all required fields');
-        return;
-      }
+      toast.error('Please fill in all required fields');
+      return;
+    }
 
-      setSubmitting(true);
-      try {
+    setSubmitting(true);
+    try {
         const submissionData = {
           ...formData,
           weight: exactWeight
         };
         const response = await pointsService.submitEWaste(submissionData);
-        
-        await refreshUser(); // Update user data
-        
+      
+      await refreshUser(); // Update user data
+      
         toast.success(`${response.message} You earned ${response.points} points and estimated price is ₹${response.estimatedPrice || estimatedPrice || 'N/A'}`);
-        
-        // Show success modal or redirect
-        setTimeout(() => {
-          navigate('/dashboard');
-        }, 2000);
-        
-      } catch (error) {
-        console.error('Failed to submit e-waste:', error);
-        const message = error.response?.data?.message || 'Failed to submit e-waste';
-        toast.error(message);
-      } finally {
-        setSubmitting(false);
-      }
+      
+      // Show success modal or redirect
+      setTimeout(() => {
+        navigate('/dashboard');
+      }, 2000);
+      
+    } catch (error) {
+      console.error('Failed to submit e-waste:', error);
+      const message = error.response?.data?.message || 'Failed to submit e-waste';
+      toast.error(message);
+    } finally {
+      setSubmitting(false);
+    }
     }
   };
 
@@ -261,16 +261,16 @@ const SubmitEWaste = () => {
                   <button type="button" className={`rounded-full px-4 py-2 font-medium transition-colors focus:outline-none ${weightRange === 'bulk' ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-primary-100'}`} onClick={() => { setWeightRange('bulk'); setShowAddItemPrompt(false); }}>Bulk items (Business)</button>
                 </div>
                 {weightRange && weightRange !== 'bulk' && (
-                  <input
-                    type="number"
+                <input
+                  type="number"
                     min="0.1"
-                    step="0.1"
+                  step="0.1"
                     required
-                    className="input"
+                  className="input"
                     placeholder="Enter exact weight in kg"
                     value={exactWeight}
                     onChange={e => setExactWeight(e.target.value)}
-                  />
+                />
                 )}
               </div>
 
@@ -414,7 +414,7 @@ const SubmitEWaste = () => {
                       ))}
                     </div>
                   )}
-                </div>
+              </div>
               )}
 
               {/* Submit Button */}

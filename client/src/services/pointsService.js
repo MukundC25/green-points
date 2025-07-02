@@ -15,7 +15,7 @@ export const pointsService = {
         storage: ewasteData.storage,
         screenSize: ewasteData.screenSize
       });
-      return response.data;
+    return response.data;
     }
   },
 
