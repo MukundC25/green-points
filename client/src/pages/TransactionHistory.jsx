@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { pointsService } from '../services/pointsService';
+import { sessionService } from '../services/sessionService';
 import { History, Filter, Download, Coins, Calendar, ArrowUpCircle, ArrowDownCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -17,18 +17,46 @@ const TransactionHistory = () => {
   const fetchTransactions = async () => {
     setLoading(true);
     try {
-      const params = {
-        page: currentPage,
-        limit: 10
-      };
-      if (filter !== 'all') {
-        params.type = filter;
+      console.log('🔄 Fetching transaction history...');
+
+      // Get dashboard data which includes recent transactions
+      const response = await fetch('/api/user/dashboard-session', {
+        method: 'GET',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' }
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch transactions: ${response.status}`);
       }
-      const response = await pointsService.getHistory(params);
-      setTransactions(response.history);
-      setPagination(response.pagination);
+
+      const dashboardData = await response.json();
+      let allTransactions = dashboardData.recentTransactions || [];
+
+      // Filter transactions based on selected filter
+      if (filter === 'credit') {
+        allTransactions = allTransactions.filter(t => t.type === 'earned');
+      } else if (filter === 'debit') {
+        allTransactions = allTransactions.filter(t => t.type === 'redeemed');
+      }
+
+      // Sort by date (newest first)
+      allTransactions.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+      setTransactions(allTransactions);
+      setPagination({
+        currentPage: 1,
+        totalPages: 1,
+        totalItems: allTransactions.length,
+        hasNext: false,
+        hasPrev: false
+      });
+
+      console.log('✅ Transaction history loaded:', allTransactions.length, 'transactions');
     } catch (error) {
+      console.error('❌ Failed to load transaction history:', error);
       toast.error('Failed to load transaction history');
+      setTransactions([]);
     } finally {
       setLoading(false);
     }

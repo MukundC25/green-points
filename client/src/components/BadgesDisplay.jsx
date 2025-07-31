@@ -16,8 +16,9 @@ const BadgesDisplay = ({ showTitle = true, limit = null }) => {
 
   const fetchBadges = async () => {
     try {
-      const response = await pointsService.getBadges();
-      setBadges(response.badges);
+      // Get badges from user context (updated by dashboard)
+      setBadges(user?.badges || []);
+      console.log('📛 Badges from user context:', user?.badges);
     } catch (error) {
       console.error('Failed to fetch badges:', error);
     } finally {

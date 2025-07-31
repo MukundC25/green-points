@@ -20,17 +20,28 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const initAuth = async () => {
       const savedToken = localStorage.getItem('token');
+
       if (savedToken) {
         try {
-          const userData = await authService.getCurrentUser();
+          // Add a timeout to prevent hanging
+          const timeoutPromise = new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('Auth timeout')), 5000)
+          );
+
+          const userData = await Promise.race([
+            authService.getCurrentUser(),
+            timeoutPromise
+          ]);
+
           setUser(userData.user);
           setToken(savedToken);
         } catch (error) {
-          console.error('Auth initialization failed:', error);
+          console.error('Auth initialization failed:', error.message);
           localStorage.removeItem('token');
           setToken(null);
         }
       }
+
       setLoading(false);
     };
 

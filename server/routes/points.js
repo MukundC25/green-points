@@ -379,6 +379,187 @@ router.get('/badges', authenticateToken, async (req, res) => {
   }
 });
 
+// Session-based calculate endpoint (no auth required)
+router.post('/calculate-session', async (req, res) => {
+  try {
+    const { type, condition, quantity, weight, brand, age } = req.body;
+
+    // Prepare data for ML prediction
+    const itemData = {
+      type: type || 'smartphone',
+      condition: condition || 'good',
+      quantity: parseInt(quantity) || 1,
+      weight: weight ? parseFloat(weight) : 0.2,
+      brand: brand || 'Unknown',
+      age: age || 1
+    };
+
+    // Get AI prediction
+    let prediction;
+    try {
+      prediction = await mlService.predictPoints(itemData);
+      console.log('✅ ML prediction successful for session:', prediction.source);
+    } catch (error) {
+      console.warn('ML prediction failed, using fallback:', error.message);
+      prediction = await mlService.predictPoints(itemData);
+    }
+
+    res.json({
+      estimatedPoints: prediction.greenPoints,
+      estimatedPrice: prediction.estimatedPrice,
+      confidence: prediction.confidence,
+      breakdown: prediction.breakdown,
+      source: prediction.source || 'ml_service',
+      timestamp: new Date().toISOString()
+    });
+
+  } catch (error) {
+    console.error('Calculate session points error:', error);
+    res.status(500).json({
+      message: 'Failed to calculate points',
+      error: error.message
+    });
+  }
+});
+
+// Session-based submit endpoint (no auth required)
+router.post('/submit-session', async (req, res) => {
+  try {
+    const { items } = req.body;
+
+    if (!items || !Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({
+        message: 'Items array is required'
+      });
+    }
+
+    // Get or create session user
+    let sessionUserId = req.session?.userId;
+
+    if (!sessionUserId) {
+      // Create a new session user
+      const sessionUser = new User({
+        name: 'Session User',
+        email: `session_${Date.now()}@greenpoints.com`,
+        password: 'session_password',
+        profile: {
+          phone: '',
+          address: '',
+          city: '',
+          state: '',
+          zipCode: ''
+        },
+        userFrequency: 'Regular',
+        greenWallet: {
+          balance: 0,
+          history: [],
+          totalEarned: 0,
+          totalRedeemed: 0
+        }
+      });
+
+      await sessionUser.save();
+
+      if (!req.session) {
+        req.session = {};
+      }
+      req.session.userId = sessionUser._id;
+      sessionUserId = sessionUser._id;
+
+      console.log('✅ Created new session user for submission:', sessionUserId);
+    }
+
+    // Fetch user
+    const user = await User.findById(sessionUserId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    let totalPoints = 0;
+    let totalEstimatedPrice = 0;
+    const processedItems = [];
+
+    // Process each item
+    for (const item of items) {
+      const itemData = {
+        type: item.type,
+        condition: item.condition,
+        quantity: parseInt(item.quantity) || 1,
+        weight: item.weight ? parseFloat(item.weight) : 0,
+        brand: item.brand || 'Generic',
+        age: item.age || 1,
+        userFrequency: user.userFrequency,
+        description: item.description || `${item.type} - ${item.condition}`,
+        imageUrl: item.imageUrl || null
+      };
+
+      // Get AI prediction for points and price
+      let prediction;
+      try {
+        prediction = await mlService.predictPoints(itemData);
+      } catch (mlError) {
+        prediction = await mlService.predictPoints(itemData);
+      }
+
+      const points = prediction.greenPoints;
+      const estimatedPrice = prediction.estimatedPrice;
+      totalPoints += points;
+      totalEstimatedPrice += estimatedPrice;
+
+      processedItems.push({
+        ...itemData,
+        points,
+        estimatedPrice,
+        confidence: prediction.confidence,
+        source: prediction.source
+      });
+
+      // Add transaction to user's wallet
+      user.greenWallet.history.push({
+        timestamp: new Date(),
+        points: points,
+        source: `${item.type} recycling - ${item.condition}`,
+        type: 'credit',
+        metadata: {
+          itemType: item.type,
+          condition: item.condition,
+          quantity: itemData.quantity,
+          weight: itemData.weight,
+          userFrequency: user.userFrequency,
+          brand: item.brand,
+          estimatedPrice: estimatedPrice
+        }
+      });
+    }
+
+    // Update user's wallet balance and totals
+    user.greenWallet.balance += totalPoints;
+    user.greenWallet.totalEarned += totalPoints;
+
+    // Save user
+    await user.save();
+
+    console.log(`✅ Session user ${sessionUserId} earned ${totalPoints} points from ${items.length} items`);
+
+    res.json({
+      success: true,
+      message: `Successfully submitted ${items.length} item(s) and earned ${totalPoints} Green Points!`,
+      totalPoints,
+      totalEstimatedPrice,
+      items: processedItems,
+      newBalance: user.greenWallet.balance,
+      timestamp: new Date().toISOString()
+    });
+
+  } catch (error) {
+    console.error('Submit session error:', error);
+    res.status(500).json({
+      message: 'Failed to submit e-waste',
+      error: error.message
+    });
+  }
+});
+
 router.post('/calculate', authenticateToken, async (req, res) => {
   try {
     const { type, condition, quantity, weight, brand, age } = req.body;

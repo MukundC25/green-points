@@ -18,11 +18,11 @@ class MLService {
    */
   async predictPoints(itemData) {
     try {
-      // Validate input data
-      this.validateInput(itemData);
-
-      // Prepare request data
+      // Prepare request data (includes mapping)
       const requestData = this.prepareRequestData(itemData);
+
+      // Validate prepared data
+      this.validatePreparedData(requestData);
 
       // Make prediction request with retry logic
       const prediction = await this.makeRequestWithRetry(requestData);
@@ -32,7 +32,7 @@ class MLService {
 
     } catch (error) {
       console.warn('ML service error:', error.message);
-      
+
       if (this.fallbackEnabled) {
         console.log('🔄 Falling back to hardcoded calculation...');
         return this.fallbackCalculation(itemData);
@@ -43,25 +43,25 @@ class MLService {
   }
 
   /**
-   * Validate input data for ML prediction
-   * @param {Object} itemData - Item data to validate
+   * Validate prepared data for ML prediction
+   * @param {Object} requestData - Prepared request data to validate
    */
-  validateInput(itemData) {
-    const required = ['type', 'condition', 'weight'];
-    const missing = required.filter(field => !itemData[field]);
-    
+  validatePreparedData(requestData) {
+    const required = ['product_type', 'condition', 'weight'];
+    const missing = required.filter(field => !requestData[field]);
+
     if (missing.length > 0) {
       throw new Error(`Missing required fields: ${missing.join(', ')}`);
     }
 
-    // Validate condition values
+    // Validate condition values (after mapping)
     const validConditions = ['Working', 'Repairable', 'Dead'];
-    if (!validConditions.includes(itemData.condition)) {
+    if (!validConditions.includes(requestData.condition)) {
       throw new Error(`Invalid condition. Must be one of: ${validConditions.join(', ')}`);
     }
 
     // Validate weight
-    if (itemData.weight <= 0 || itemData.weight > 50) {
+    if (requestData.weight <= 0 || requestData.weight > 50) {
       throw new Error('Weight must be between 0.01 and 50 kg');
     }
   }
@@ -75,12 +75,9 @@ class MLService {
     return {
       product_type: this.mapProductType(itemData.type),
       brand: itemData.brand || 'Generic',
-      condition: itemData.condition,
-      age_years: this.calculateAge(itemData.age),
-      weight_kg: parseFloat(itemData.weight),
-      storage_gb: itemData.storage ? parseInt(itemData.storage) : null,
-      screen_size_inch: itemData.screenSize ? parseFloat(itemData.screenSize) : null,
-      location_tier: itemData.locationTier || 1
+      condition: this.mapCondition(itemData.condition),
+      age: this.calculateAge(itemData.age),
+      weight: parseFloat(itemData.weight)
     };
   }
 
@@ -105,6 +102,27 @@ class MLService {
     };
 
     return typeMapping[frontendType.toLowerCase()] || 'Speaker';
+  }
+
+  /**
+   * Map frontend condition to ML model condition
+   * @param {string} frontendCondition - Condition from frontend
+   * @returns {string} ML model condition
+   */
+  mapCondition(frontendCondition) {
+    const conditionMapping = {
+      'excellent': 'Working',
+      'good': 'Working',
+      'fair': 'Repairable',
+      'poor': 'Repairable',
+      'working': 'Working',
+      'repairable': 'Repairable',
+      'broken': 'Dead',
+      'dead': 'Dead',
+      'not working': 'Dead'
+    };
+
+    return conditionMapping[frontendCondition.toLowerCase()] || 'Working';
   }
 
   /**
@@ -182,7 +200,7 @@ class MLService {
    */
   processMLResponse(mlResponse, originalData) {
     return {
-      estimatedPrice: mlResponse.estimated_price,
+      estimatedPrice: mlResponse.predicted_price || mlResponse.estimated_price,
       greenPoints: mlResponse.green_points,
       confidence: mlResponse.confidence,
       breakdown: {

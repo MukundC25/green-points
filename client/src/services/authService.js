@@ -5,17 +5,27 @@ const API_URL = import.meta.env.VITE_API_URL || '/api';
 // Create axios instance with default config
 const api = axios.create({
   baseURL: API_URL,
+  timeout: 10000, // 10 second timeout
+  withCredentials: true, // Enable cookies for sessions
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-// Add token to requests if available
+// Add token to requests if available (skip for session-based endpoints)
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    // Skip token for session-based endpoints
+    const isSessionEndpoint = config.url?.includes('-session') ||
+                              config.url?.includes('dashboard-session') ||
+                              config.url?.includes('calculate-session') ||
+                              config.url?.includes('submit-session');
+
+    if (!isSessionEndpoint) {
+      const token = localStorage.getItem('token');
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
     }
     return config;
   },
@@ -24,13 +34,30 @@ api.interceptors.request.use(
   }
 );
 
+// Add request logging for debugging
+api.interceptors.request.use(
+  (config) => {
+    console.log('🔄 API Request:', config.method?.toUpperCase(), config.url);
+    return config;
+  },
+  (error) => {
+    console.error('❌ API Request Error:', error);
+    return Promise.reject(error);
+  }
+);
+
 // Handle token expiration
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    console.log('✅ API Response:', response.status, response.config.url);
+    return response;
+  },
   (error) => {
+    console.error('❌ API Response Error:', error.response?.status, error.response?.data || error.message);
     if (error.response?.status === 401) {
       localStorage.removeItem('token');
-      window.location.href = '/login';
+      // Don't redirect to login for demo mode
+      console.log('🔄 Auth error in demo mode, continuing...');
     }
     return Promise.reject(error);
   }

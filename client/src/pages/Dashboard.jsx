@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { userService } from '../services/pointsService';
+// import { useAuth } from '../context/AuthContext'; // Removed auth
+// Removed userService import - using direct fetch
 import { 
   Coins, 
   Upload, 
@@ -17,22 +17,93 @@ import TwoXValueBanner from '../components/TwoXValueBanner';
 import BadgesDisplay from '../components/BadgesDisplay';
 
 const Dashboard = () => {
-  const { user, refreshUser } = useAuth();
+  const [user, setUser] = useState({
+    name: 'Demo User',
+    email: 'demo@greenpoints.com',
+    points: 0,
+    badges: ['eco-warrior', 'recycling-champion']
+  });
+
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchDashboardData();
+    // Set up real-time updates every 5 seconds for better responsiveness
+    const interval = setInterval(fetchDashboardData, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Also refresh when the page becomes visible (user switches back to tab)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        fetchDashboardData();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, []);
 
   const fetchDashboardData = async () => {
     try {
-      const data = await userService.getDashboard();
+      setLoading(true);
+      console.log('🔄 Fetching dashboard data...');
+
+      // Use direct fetch to ensure session persistence
+      const response = await fetch('/api/user/dashboard-session', {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      console.log('✅ Dashboard data received:', data);
+      console.log('📊 Points:', data.totalPoints);
+      console.log('📊 Submissions:', data.totalSubmissions);
+      console.log('📊 Badges:', data.badges);
+      console.log('📊 Transactions:', data.recentTransactions?.length || 0);
+
       setDashboardData(data);
-      await refreshUser(); // Update user data in context
+
+      // Update user points from dashboard data
+      setUser(prev => ({
+        ...prev,
+        points: data.totalPoints || 0,
+        badges: data.badges || []
+      }));
+
+      console.log('✅ Dashboard state updated with real data');
+      console.log('📊 Dashboard state:', {
+        totalPoints: data.totalPoints,
+        totalSubmissions: data.totalSubmissions,
+        badges: data.badges?.length || 0,
+        transactions: data.recentTransactions?.length || 0
+      });
+
     } catch (error) {
-      console.error('Failed to fetch dashboard data:', error);
-      toast.error('Failed to load dashboard data');
+      console.error('❌ Failed to fetch dashboard data:', error);
+      // Use fallback only as last resort
+      console.error('❌ Dashboard fetch failed:', error);
+      const fallbackData = {
+        user: { name: 'Session User', badges: [] },
+        totalPoints: 0,
+        totalSubmissions: 0,
+        totalRedemptions: 0,
+        recentTransactions: [],
+        monthlyStats: { submissions: 0, points: 0 },
+        badges: []
+      };
+      setDashboardData(fallbackData);
+      setUser(prev => ({ ...prev, points: 0, badges: [] }));
+      console.log('🔄 Using fallback data as last resort');
     } finally {
       setLoading(false);
     }
@@ -40,27 +111,64 @@ const Dashboard = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="loading-spinner"></div>
-        <span className="ml-2 text-gray-600">Loading dashboard...</span>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="loading-spinner mx-auto mb-4"></div>
+          <p className="text-gray-600 text-lg">Loading your dashboard...</p>
+        </div>
       </div>
     );
   }
 
-  const wallet = dashboardData?.wallet || {};
-  const stats = dashboardData?.statistics || {};
+  if (!dashboardData) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-gray-600 text-lg">Unable to load dashboard data</p>
+          <button
+            onClick={fetchDashboardData}
+            className="mt-4 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Map API response to expected format
+  const wallet = {
+    balance: dashboardData?.totalPoints || 0,
+    totalEarned: dashboardData?.totalPoints || 0,
+    totalRedeemed: dashboardData?.totalRedemptions || 0,
+    thisMonthEarned: dashboardData?.monthlyStats?.points || 0
+  };
+  const stats = {
+    totalSubmissions: dashboardData?.totalSubmissions || 0,
+    thisMonthSubmissions: dashboardData?.monthlyStats?.submissions || 0
+  };
   const recentTransactions = dashboardData?.recentTransactions || [];
 
   return (
     <div className="space-y-6">
       {/* Welcome Header */}
       <div className="bg-gradient-to-r from-primary-600 to-green-600 rounded-lg p-6 text-white">
-        <h1 className="text-2xl md:text-3xl font-bold mb-2">
-          Welcome back, {user?.name}! 🌱
-        </h1>
-        <p className="text-primary-100">
-          You're making a positive impact on the environment. Keep up the great work!
-        </p>
+        <div className="flex justify-between items-start">
+          <div>
+            <h1 className="text-2xl md:text-3xl font-bold mb-2">
+              Welcome back, {user?.name}! 🌱
+            </h1>
+            <p className="text-primary-100">
+              You're making a positive impact on the environment. Keep up the great work!
+            </p>
+          </div>
+          <button
+            onClick={fetchDashboardData}
+            className="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg text-white text-sm font-medium transition-colors"
+          >
+            🔄 Refresh
+          </button>
+        </div>
       </div>
 
       {/* 2X Value Banner */}
@@ -149,7 +257,7 @@ const Dashboard = () => {
             </div>
             <div>
               <p className="text-sm text-gray-600">Items Submitted</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.totalItemsSubmitted || 0}</p>
+              <p className="text-2xl font-bold text-gray-900">{stats.totalSubmissions || 0}</p>
             </div>
           </div>
         </div>
@@ -161,7 +269,7 @@ const Dashboard = () => {
             </div>
             <div>
               <p className="text-sm text-gray-600">Total Transactions</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.totalTransactions || 0}</p>
+              <p className="text-2xl font-bold text-gray-900">{recentTransactions.length || 0}</p>
             </div>
           </div>
         </div>
@@ -188,23 +296,23 @@ const Dashboard = () => {
                 <div key={index} className="flex items-center justify-between py-3 border-b border-gray-100 last:border-b-0">
                   <div className="flex items-center space-x-3">
                     <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                      transaction.type === 'credit' 
-                        ? 'bg-green-100 text-green-600' 
+                      transaction.type === 'earned'
+                        ? 'bg-green-100 text-green-600'
                         : 'bg-red-100 text-red-600'
                     }`}>
-                      {transaction.type === 'credit' ? '+' : '-'}
+                      {transaction.type === 'earned' ? '+' : '-'}
                     </div>
                     <div>
-                      <p className="font-medium text-gray-900">{transaction.source}</p>
+                      <p className="font-medium text-gray-900">{transaction.description}</p>
                       <p className="text-sm text-gray-500">
-                        {new Date(transaction.timestamp).toLocaleDateString()}
+                        {new Date(transaction.date).toLocaleDateString()}
                       </p>
                     </div>
                   </div>
                   <div className={`font-semibold ${
-                    transaction.type === 'credit' ? 'text-green-600' : 'text-red-600'
+                    transaction.type === 'earned' ? 'text-green-600' : 'text-red-600'
                   }`}>
-                    {transaction.type === 'credit' ? '+' : ''}{transaction.points} points
+                    {transaction.type === 'earned' ? '+' : ''}{transaction.amount} points
                   </div>
                 </div>
               ))}

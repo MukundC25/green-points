@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate, Outlet } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
   Home,
@@ -14,9 +14,9 @@ import {
   Leaf
 } from 'lucide-react';
 
-const Layout = ({ children }) => {
+const Layout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -30,8 +30,8 @@ const Layout = ({ children }) => {
   ];
 
   const handleLogout = () => {
-    logout();
-    navigate('/');
+    // Removed logout functionality for now
+    console.log('Logout clicked - auth removed');
   };
 
   return (
@@ -73,7 +73,7 @@ const Layout = ({ children }) => {
               </div>
               <div>
                 <p className="text-sm font-medium text-gray-900">{user?.name}</p>
-                <p className="text-xs text-gray-500">{user?.greenPoints || 0} Green Points</p>
+                <p className="text-xs text-gray-500">{user?.points || 0} Green Points</p>
               </div>
             </div>
           </div>
@@ -139,7 +139,7 @@ const Layout = ({ children }) => {
         {/* Page content */}
         <main className="flex-1 overflow-y-auto bg-gray-50">
           <div className="p-6">
-            {children}
+            <Outlet />
           </div>
         </main>
       </div>

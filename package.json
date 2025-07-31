@@ -9,7 +9,11 @@
     "client": "cd client && npm run dev",
     "build": "cd client && npm run build",
     "start": "cd server && npm start",
-    "install-all": "npm install && cd server && npm install && cd ../client && npm install"
+    "install-all": "npm install && cd server && npm install && cd ../client && npm install",
+    "validate": "./validate_environment.sh",
+    "start-with-ml": "./start_with_ml.sh",
+    "setup-ml": "./setup_ml_service.sh",
+    "test-integration": "node test_ml_integration.js"
   },
   "keywords": [
     "e-waste",

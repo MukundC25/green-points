@@ -75,7 +75,7 @@ const RedeemPoints = () => {
   ];
 
   const handleRedeem = async (reward) => {
-    if (!user || user.greenPoints < reward.points) {
+    if (!user || user.points < reward.points) {
       toast.error('Insufficient Green Points');
       return;
     }
@@ -125,7 +125,7 @@ const RedeemPoints = () => {
             <div className="flex items-center space-x-2 mb-1">
               <Coins className="h-6 w-6 text-primary-600" />
               <span className="text-2xl font-bold text-primary-600">
-                {user?.greenPoints || 0}
+                {user?.points || 0}
               </span>
             </div>
             <p className="text-sm text-gray-500">Available Points</p>
@@ -153,8 +153,8 @@ const RedeemPoints = () => {
             <div className="p-6">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {category.rewards.map((reward) => {
-                  const canAfford = user?.greenPoints >= reward.points;
-                  const canAffordWith2X = twoXStatus?.canUse2X && user?.greenPoints >= Math.ceil(reward.points / 2);
+                  const canAfford = user?.points >= reward.points;
+                  const canAffordWith2X = twoXStatus?.canUse2X && user?.points >= Math.ceil(reward.points / 2);
                   const showAs2XOption = !canAfford && canAffordWith2X;
 
                   return (
@@ -200,7 +200,7 @@ const RedeemPoints = () => {
                         </div>
                         {!canAfford && !showAs2XOption && (
                           <span className="text-xs text-red-500 font-medium">
-                            Need {reward.points - (user?.greenPoints || 0)} more
+                            Need {reward.points - (user?.points || 0)} more
                           </span>
                         )}
                         {showAs2XOption && (

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { sessionService } from '../services/sessionService';
 import { pointsService } from '../services/pointsService';
 import { Upload, Calculator, Coins, CheckCircle, AlertCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -11,6 +12,8 @@ const SubmitEWaste = () => {
     condition: '',
     quantity: 1,
     weight: '',
+    brand: '',
+    age: 1,
     description: '',
     imageFile: null
   });
@@ -62,25 +65,33 @@ const SubmitEWaste = () => {
   };
 
   const calculatePoints = async () => {
-    if (!formData.type || !formData.condition || !formData.quantity) {
+    if (!formData.type || !formData.condition) {
+      setEstimatedPoints(null);
+      setEstimatedPrice(null);
+      setBreakdown(null);
       return;
     }
 
     setLoading(true);
     try {
+      // Use pointsService for consistency
       const response = await pointsService.calculatePoints({
         type: formData.type,
-        condition: formData.condition === 'Not Working' ? 'Dead' : formData.condition,
-        quantity: formData.quantity,
-        weight: exactWeight || formData.weight
+        condition: formData.condition === 'Not Working' ? 'Dead' : 'Working',
+        quantity: formData.quantity || 1,
+        weight: parseFloat(exactWeight) || 0.5,
+        brand: formData.brand || 'Generic',
+        age: formData.age || 1
       });
-      
+
       setEstimatedPoints(response.estimatedPoints);
       setBreakdown(response.breakdown);
       setEstimatedPrice(response.estimatedPrice || null);
     } catch (error) {
       console.error('Failed to calculate points:', error);
-      toast.error('Failed to calculate points');
+      setEstimatedPoints(null);
+      setEstimatedPrice(null);
+      setBreakdown(null);
     } finally {
       setLoading(false);
     }
@@ -94,22 +105,67 @@ const SubmitEWaste = () => {
     e.preventDefault();
     if (weightRange === '<5') {
       const total = items.reduce((sum, i) => sum + parseFloat(i.weight || 0), 0);
-      if (total !== 5) {
-        toast.error('Total weight must be exactly 5kg for pickup in this category');
+      if (total < 4.5 || total > 5.5) {
+        toast.error(`Total weight must be approximately 5kg (current: ${total.toFixed(2)}kg). Please add or remove items.`);
         return;
       }
       setSubmitting(true);
       try {
-        // Submit all items as batch
+        // Submit all items as batch using pointsService
         const response = await pointsService.submitEWaste(items);
-        await refreshUser();
-        toast.success(`${response.message} You earned ${response.points} points and estimated price is ₹${response.estimatedPrice || 'N/A'}`);
+        console.log('✅ Submit response:', response);
+
+        // Test dashboard immediately after submit
+        const dashboardTest = await fetch('/api/user/dashboard-session', {
+          method: 'GET',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+        });
+        const dashboardData = await dashboardTest.json();
+        console.log('🧪 Dashboard after submit:', dashboardData);
+
+        // Skip refreshUser for session-based system
+        toast.success(`${response.message} You earned ${response.totalPoints} points and estimated price is ₹${response.totalEstimatedPrice || 'N/A'}`);
         setTimeout(() => {
           navigate('/dashboard');
         }, 2000);
       } catch (error) {
         console.error('Failed to submit e-waste:', error);
         const message = error.response?.data?.message || 'Failed to submit e-waste';
+        toast.error(message);
+      } finally {
+        setSubmitting(false);
+      }
+      return;
+    } else if (weightRange === 'bulk') {
+      // Handle bulk items submission
+      if (!formData.type || !formData.condition || !exactWeight || parseFloat(exactWeight) < 20) {
+        toast.error('Please fill in all required fields. Minimum weight for bulk items is 20kg.');
+        return;
+      }
+
+      setSubmitting(true);
+      try {
+        const submissionData = {
+          ...formData,
+          weight: exactWeight,
+          isBulk: true
+        };
+        // Use pointsService for bulk submission
+        const response = await pointsService.submitEWaste(submissionData);
+        console.log('✅ Bulk submit response:', response);
+
+        // Skip refreshUser for session-based system
+
+        toast.success(`Bulk submission received! ${response.message} You earned ${response.totalPoints} points. Our team will contact you for pickup arrangements.`);
+
+        setTimeout(() => {
+          navigate('/dashboard');
+        }, 3000);
+
+      } catch (error) {
+        console.error('Failed to submit bulk e-waste:', error);
+        const message = error.response?.data?.message || 'Failed to submit bulk e-waste';
         toast.error(message);
       } finally {
         setSubmitting(false);
@@ -127,12 +183,15 @@ const SubmitEWaste = () => {
           ...formData,
           weight: exactWeight
         };
+
+        // Use pointsService for regular submission
         const response = await pointsService.submitEWaste(submissionData);
-      
-      await refreshUser(); // Update user data
-      
-        toast.success(`${response.message} You earned ${response.points} points and estimated price is ₹${response.estimatedPrice || estimatedPrice || 'N/A'}`);
-      
+        console.log('✅ Submit response:', response);
+
+      // Skip refreshUser for session-based system
+
+        toast.success(`${response.message} You earned ${response.totalPoints} points and estimated price is ₹${response.totalEstimatedPrice || estimatedPrice || 'N/A'}`);
+
       // Show success modal or redirect
       setTimeout(() => {
         navigate('/dashboard');
@@ -159,11 +218,12 @@ const SubmitEWaste = () => {
   // --- Button enable/disable logic ---
   const isPickupReady = (() => {
     if (weightRange === '<5') {
-      return items.reduce((sum, i) => sum + parseFloat(i.weight || 0), 0) >= 5 && selectedDay && pickupTime;
+      const total = items.reduce((sum, i) => sum + parseFloat(i.weight || 0), 0);
+      return total >= 4.5 && total <= 5.5 && selectedDay && pickupTime;
     }
     if (weightRange === 'bulk') {
-      // For bulk, require type, condition, and a minimum weight (e.g., 20kg), and pickup slot
-      return formData.type && formData.condition && exactWeight && parseFloat(exactWeight) >= 20 && selectedDay && pickupTime;
+      // For bulk, only require basic info - no pickup slot needed
+      return formData.type && formData.condition && exactWeight && parseFloat(exactWeight) >= 20;
     }
     // For other categories
     return formData.type && formData.condition && weightRange && exactWeight && parseFloat(exactWeight) >= 5 && selectedDay && pickupTime;
@@ -271,6 +331,24 @@ const SubmitEWaste = () => {
                     value={exactWeight}
                     onChange={e => setExactWeight(e.target.value)}
                 />
+                )}
+                {weightRange === 'bulk' && (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <h4 className="font-medium text-blue-900 mb-2">Bulk Items (Business)</h4>
+                  <p className="text-blue-700 text-sm mb-3">
+                    For bulk e-waste disposal, we'll contact you to arrange a custom pickup solution.
+                  </p>
+                  <input
+                    type="number"
+                    min="20"
+                    step="1"
+                    required
+                    className="input"
+                    placeholder="Estimated total weight in kg (minimum 20kg)"
+                    value={exactWeight}
+                    onChange={e => setExactWeight(e.target.value)}
+                  />
+                </div>
                 )}
               </div>
 
@@ -431,7 +509,7 @@ const SubmitEWaste = () => {
                 ) : (
                   <>
                     <CheckCircle className="h-5 w-5 mr-2" />
-                    Submit for Pickup
+                    {weightRange === 'bulk' ? 'Request Contact for Bulk Pickup' : 'Submit for Pickup'}
                   </>
                 )}
               </button>

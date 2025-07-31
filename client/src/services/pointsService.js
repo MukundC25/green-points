@@ -1,22 +1,25 @@
 import api from './authService';
 
 export const pointsService = {
-  // Submit e-waste and earn points
+  // Submit e-waste and earn points (session-based)
   submitEWaste: async (ewasteData) => {
-    // If ewasteData is an array, send as { items: [...] }
-    if (Array.isArray(ewasteData)) {
-      const response = await api.post('/points/submit', { items: ewasteData });
-      return response.data;
-    } else {
-      const response = await api.post('/points/submit', {
-        ...ewasteData,
-        brand: ewasteData.brand,
-        age: ewasteData.age,
-        storage: ewasteData.storage,
-        screenSize: ewasteData.screenSize
-      });
-    return response.data;
+    // Always use direct fetch for consistency
+    const payload = Array.isArray(ewasteData)
+      ? { items: ewasteData }
+      : { items: [ewasteData] };
+
+    const response = await fetch('/api/points/submit-session', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    if (!response.ok) {
+      throw new Error(`Submit failed: ${response.status}`);
     }
+
+    return await response.json();
   },
 
   // Redeem points
@@ -38,16 +41,20 @@ export const pointsService = {
     return response.data;
   },
 
-  // Calculate points (preview)
+  // Calculate points (preview) - session-based
   calculatePoints: async (ewasteData) => {
-    const response = await api.post('/points/calculate', {
-      ...ewasteData,
-      brand: ewasteData.brand,
-      age: ewasteData.age,
-      storage: ewasteData.storage,
-      screenSize: ewasteData.screenSize
+    const response = await fetch('/api/points/calculate-session', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(ewasteData)
     });
-    return response.data;
+
+    if (!response.ok) {
+      throw new Error(`Calculate failed: ${response.status}`);
+    }
+
+    return await response.json();
   },
 
   // Get 2X value status
@@ -90,10 +97,19 @@ export const userService = {
     return response.data;
   },
 
-  // Get dashboard data
+  // Get dashboard data (session-based)
   getDashboard: async () => {
-    const response = await api.get('/user/dashboard');
-    return response.data;
+    const response = await fetch('/api/user/dashboard-session', {
+      method: 'GET',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Dashboard failed: ${response.status}`);
+    }
+
+    return await response.json();
   },
 
   // Get user statistics
