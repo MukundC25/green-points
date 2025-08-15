@@ -88,7 +88,7 @@ An AI-powered e-waste rewards platform that incentivizes responsible electronic 
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
 │   Frontend      │    │   Backend API   │    │   ML Service    │
 │   (React)       │◄──►│   (Node.js)     │◄──►│   (Python)      │
-│   Port: 5173    │    │   Port: 5001    │    │   Port: 8000    │
+│   Port: 5173    │    │   Port: 5000    │    │   Port: 8000    │
 └─────────────────┘    └─────────────────┘    └─────────────────┘
          │                       │                       │
          │                       ▼                       │
@@ -189,7 +189,7 @@ cd green-points
 
    **Client (.env)**
    ```bash
-   VITE_API_URL=http://localhost:5001/api
+   VITE_API_URL=http://localhost:5000/api
    VITE_NODE_ENV=development
    ```
 
@@ -198,7 +198,7 @@ cd green-points
    PORT=8000
    HOST=0.0.0.0
    MODEL_PATH=./models/ewaste_model.pkl
-   CORS_ORIGINS=["http://localhost:5001", "http://localhost:5173"]
+   CORS_ORIGINS=["http://localhost:5000", "http://localhost:5173"]
    ```
 
 5. **Start the System**
@@ -219,7 +219,7 @@ cd green-points
 
 ### 🌐 Service URLs
 - **Frontend**: http://localhost:5173
-- **Backend API**: http://localhost:5001
+- **Backend API**: http://localhost:5000
 - **ML Service**: http://localhost:8000
 - **MongoDB**: localhost:27017
 

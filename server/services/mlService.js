@@ -6,8 +6,8 @@ const axios = require('axios');
 class MLService {
   constructor() {
     this.mlApiUrl = process.env.ML_API_URL || 'http://localhost:8000';
-    this.timeout = 10000; // 10 seconds timeout
-    this.retryAttempts = 3;
+    this.timeout = 1000; // Keep backend snappy: 0.8–1.2s budget
+    this.retryAttempts = 1; // Avoid blocking on ML
     this.fallbackEnabled = true;
   }
 
@@ -47,7 +47,7 @@ class MLService {
    * @param {Object} requestData - Prepared request data to validate
    */
   validatePreparedData(requestData) {
-    const required = ['product_type', 'condition', 'weight'];
+    const required = ['product_type', 'condition', 'age_years', 'weight_kg'];
     const missing = required.filter(field => !requestData[field]);
 
     if (missing.length > 0) {
@@ -61,7 +61,7 @@ class MLService {
     }
 
     // Validate weight
-    if (requestData.weight <= 0 || requestData.weight > 50) {
+    if (requestData.weight_kg <= 0 || requestData.weight_kg > 50) {
       throw new Error('Weight must be between 0.01 and 50 kg');
     }
   }
@@ -76,8 +76,10 @@ class MLService {
       product_type: this.mapProductType(itemData.type),
       brand: itemData.brand || 'Generic',
       condition: this.mapCondition(itemData.condition),
-      age: this.calculateAge(itemData.age),
-      weight: parseFloat(itemData.weight)
+      age_years: this.calculateAge(itemData.age),
+      weight_kg: parseFloat(itemData.weight) || 0.1,
+      // optional fields the model may use
+      location_tier: 1
     };
   }
 

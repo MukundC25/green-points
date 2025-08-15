@@ -33,7 +33,7 @@ services:
     networks:
       - green-points-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health')"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -65,15 +65,14 @@ services:
 
   # React Frontend (Development)
   frontend:
-    build:
-      context: ./client
-      dockerfile: Dockerfile.dev
+    image: node:18-alpine
+    working_dir: /app
     container_name: green-points-frontend
     restart: unless-stopped
     ports:
       - "5173:5173"
     environment:
-      - VITE_API_URL=http://localhost:5000/api
+      - VITE_API_URL=http://backend:5000/api
     depends_on:
       - backend
     networks:
@@ -81,6 +80,7 @@ services:
     volumes:
       - ./client:/app
       - /app/node_modules
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0 --port 5173"
 
 volumes:
   mongodb_data:

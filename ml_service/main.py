@@ -12,6 +12,7 @@ import os
 import logging
 import numpy as np
 from dotenv import load_dotenv
+from train_model import EWastePricingModel
 
 # Load environment variables
 load_dotenv()
@@ -36,7 +37,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Global model instance
+# Global model instance (thread-safe read-only after startup)
 ml_model = None
 
 class PredictionRequest(BaseModel):
@@ -64,19 +65,32 @@ class HealthResponse(BaseModel):
     model_loaded: bool
     version: str
 
-# Try to load model at startup
-try:
-    model_path = "models/ewaste_model.pkl"
-    if os.path.exists(model_path):
-        ml_model = joblib.load(model_path)
-        logger.info("✅ ML model loaded successfully")
-    else:
-        logger.warning("⚠️ Model file not found. Using fallback predictions...")
+# Load model at startup for fast first request
+@app.on_event("startup")
+async def load_model_on_startup():
+    global ml_model
+    try:
+        model_path = os.getenv("MODEL_PATH", "models/ewaste_model.pkl")
+        if os.path.exists(model_path):
+            ml_model = joblib.load(model_path)
+            logger.info("✅ ML model loaded at startup")
+            # Best-effort warmup to avoid first-request latency
+            try:
+                if isinstance(ml_model, dict) and 'price_model' in ml_model:
+                    # Attempt a trivial warmup predict with zeros
+                    import numpy as _np
+                    X = _np.zeros((1, getattr(ml_model['price_model'], 'n_features_in_', 8)))
+                    _ = ml_model['price_model'].predict(X)
+                elif hasattr(ml_model, 'predict'):
+                    _ = ml_model.predict([[0,0,0,0,0,0,0,0]])
+            except Exception as warmup_err:
+                logger.info(f"Warmup skipped: {warmup_err}")
+        else:
+            logger.warning("⚠️ Model file not found. Using fallback predictions...")
+            ml_model = None
+    except Exception as e:
+        logger.error(f"❌ Failed to load model at startup: {e}")
         ml_model = None
-except Exception as e:
-    logger.error(f"❌ Failed to load model: {e}")
-    ml_model = None
-
 
 
 @app.get("/health", response_model=HealthResponse)
@@ -101,7 +115,15 @@ async def predict_price_and_points(request: PredictionRequest):
             try:
                 # Create feature array for the model
                 features = create_feature_array(product_data)
-                predicted_price = float(ml_model.predict([features])[0])
+
+                # Support both dict bundle and single model
+                if isinstance(ml_model, dict) and 'price_model' in ml_model:
+                    predicted_price = float(ml_model['price_model'].predict([features])[0])
+                elif hasattr(ml_model, 'predict'):
+                    predicted_price = float(ml_model.predict([features])[0])
+                else:
+                    raise RuntimeError("Unsupported model format")
+
                 confidence = 0.92  # High confidence for trained model
             except Exception as e:
                 logger.warning(f"Model prediction failed: {e}, using fallback")
@@ -234,18 +256,37 @@ def create_prediction_breakdown(product_data: Dict, prediction: Dict) -> Dict[st
 @app.get("/model/info")
 async def get_model_info():
     """Get information about the loaded model"""
-    
-    if not ml_model or not ml_model.is_trained:
+
+    if not ml_model:
         raise HTTPException(status_code=503, detail="Model not loaded")
-    
+
+    # Support both dict bundle and class instance
+    try:
+        if isinstance(ml_model, dict):
+            feature_columns = ml_model.get('feature_columns') or []
+            label_encoders = ml_model.get('label_encoders') or {}
+        else:
+            feature_columns = getattr(ml_model, 'feature_columns', []) or []
+            label_encoders = getattr(ml_model, 'label_encoders', {}) or {}
+    except Exception:
+        feature_columns, label_encoders = [], {}
+
+    supported_brands = []
+    try:
+        enc = label_encoders.get('brand')
+        if hasattr(enc, 'classes_'):
+            supported_brands = list(enc.classes_)
+    except Exception:
+        pass
+
     return {
         "model_type": "Random Forest Regressor",
-        "features_count": len(ml_model.feature_columns) if ml_model.feature_columns else 0,
+        "features_count": len(feature_columns),
         "supported_products": [
             "Smartphone", "Laptop", "Tablet", "Monitor", "Headphones",
             "Charger", "Battery", "Keyboard", "Mouse", "Speaker"
         ],
-        "supported_brands": list(ml_model.label_encoders.get('brand', {}).classes_ if 'brand' in ml_model.label_encoders else []),
+        "supported_brands": supported_brands,
         "supported_conditions": ["Working", "Repairable", "Dead"],
         "version": "1.0.0"
     }
