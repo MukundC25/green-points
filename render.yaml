@@ -1,0 +1,53 @@
+services:
+  # Frontend - React Static Site
+  - type: web
+    name: green-points-frontend
+    env: static
+    buildCommand: cd client && npm install && npm run build
+    staticPublishPath: ./client/dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+
+  # Backend - Node.js API
+  - type: web
+    name: green-points-backend
+    env: node
+    buildCommand: cd server && npm install
+    startCommand: cd server && npm start
+    plan: starter
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: MONGODB_URI
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: CLIENT_URL
+        fromService:
+          type: web
+          name: green-points-frontend
+          property: url
+      - key: ML_API_URL
+        fromService:
+          type: web
+          name: green-points-ml-service
+          property: url
+
+  # ML Service - Python FastAPI
+  - type: web
+    name: green-points-ml-service
+    env: python
+    buildCommand: cd ml_service && pip install -r requirements.txt
+    startCommand: cd ml_service && uvicorn main:app --host 0.0.0.0 --port $PORT
+    plan: starter
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: PYTHONPATH
+        value: /opt/render/project/src/ml_service
