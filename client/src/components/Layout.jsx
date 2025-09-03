@@ -4,10 +4,6 @@ import { useAuth } from '../context/AuthContext';
 import {
   Home,
   Upload,
-  Gift,
-  History,
-  User,
-  Users,
   LogOut,
   Menu,
   X,
@@ -23,10 +19,6 @@ const Layout = () => {
   const navigation = [
     { name: 'Dashboard', href: '/dashboard', icon: Home },
     { name: 'Submit E-Waste', href: '/submit', icon: Upload },
-    { name: 'Redeem Points', href: '/redeem', icon: Gift },
-    { name: 'Transaction History', href: '/history', icon: History },
-    { name: 'Refer Friends', href: '/referral', icon: Users },
-    { name: 'Profile', href: '/profile', icon: User },
   ];
 
   const handleLogout = () => {

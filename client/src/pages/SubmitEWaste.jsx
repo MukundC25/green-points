@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { sessionService } from '../services/sessionService';
-import { pointsService } from '../services/pointsService';
 import { Upload, Calculator, Coins, CheckCircle, AlertCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { usePoints } from '../context/PointsContext';
 
 const SubmitEWaste = () => {
   const [formData, setFormData] = useState({
@@ -22,8 +20,9 @@ const SubmitEWaste = () => {
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [estimatedPrice, setEstimatedPrice] = useState(null);
-  const { user, refreshUser } = useAuth();
   const navigate = useNavigate();
+  const [user] = useState({ name: 'Demo User', email: 'demo@greenpoints.com' });
+  const { addSubmission } = usePoints();
   const [weightRange, setWeightRange] = useState('');
   const [exactWeight, setExactWeight] = useState('');
   const [pickupSlot, setPickupSlot] = useState('');
@@ -72,23 +71,57 @@ const SubmitEWaste = () => {
       return;
     }
 
+    // Use a default weight if exactWeight is not set - this allows immediate calculation
+    const weightToUse = parseFloat(exactWeight) || parseFloat(formData.weight) || 0.5;
+
+    console.log('🔄 Calculating points for:', {
+      type: formData.type,
+      condition: formData.condition,
+      weight: weightToUse,
+      brand: formData.brand
+    });
+
     setLoading(true);
     try {
-      // Use pointsService for consistency
-      const response = await pointsService.calculatePoints({
-        type: formData.type,
-        condition: formData.condition === 'Not Working' ? 'Dead' : 'Working',
-        quantity: formData.quantity || 1,
-        weight: parseFloat(exactWeight) || 0.5,
-        brand: formData.brand || 'Generic',
-        age: formData.age || 1
+      // Call ML service directly
+      const response = await fetch('http://localhost:8000/predict', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          device_type: formData.type.toLowerCase(),
+          brand: formData.brand || 'Generic',
+          condition: formData.condition === 'Not Working' ? 'dead' : 'working',
+          age_years: formData.age || 2,
+          weight: weightToUse
+        })
       });
 
-      setEstimatedPoints(response.estimatedPoints);
-      setBreakdown(response.breakdown);
-      setEstimatedPrice(response.estimatedPrice || null);
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('ML service error:', response.status, errorText);
+        throw new Error(`ML service error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log('✅ ML prediction response:', data);
+      setEstimatedPoints(data.green_points);
+      setEstimatedPrice(data.estimated_price);
+      setBreakdown(data.breakdown);
+
+      // Show success message
+      toast.success(`Estimated: ${data.green_points} points, ₹${data.estimated_price}`);
     } catch (error) {
-      console.error('Failed to calculate points:', error);
+      console.error('❌ ML prediction failed:', error);
+      console.error('Request data:', {
+        device_type: formData.type.toLowerCase(),
+        brand: formData.brand || 'Generic',
+        condition: formData.condition === 'Not Working' ? 'dead' : 'working',
+        age_years: formData.age || 2,
+        weight: parseFloat(exactWeight) || 0.5
+      });
+      toast.error(`Failed to calculate points: ${error.message}`);
       setEstimatedPoints(null);
       setEstimatedPrice(null);
       setBreakdown(null);
@@ -99,7 +132,7 @@ const SubmitEWaste = () => {
 
   useEffect(() => {
     calculatePoints();
-  }, [formData.type, formData.condition, formData.quantity, exactWeight]);
+  }, [formData.type, formData.condition, formData.brand, formData.quantity, exactWeight]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -111,21 +144,17 @@ const SubmitEWaste = () => {
       }
       setSubmitting(true);
       try {
-        // Submit all items as batch using pointsService
-        const response = await pointsService.submitEWaste(items);
-        console.log('✅ Submit response:', response);
+        // Simulate submission for demo
+        console.log('✅ Submitting items:', items);
 
-        // Test dashboard immediately after submit
-        const dashboardTest = await fetch('/api/user/dashboard-session', {
-          method: 'GET',
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json' },
-        });
-        const dashboardData = await dashboardTest.json();
-        console.log('🧪 Dashboard after submit:', dashboardData);
+        // Calculate total points from items
+        const totalPoints = items.reduce((sum, item) => sum + (item.estimatedPoints || 0), 0);
+        const totalPrice = items.reduce((sum, item) => sum + (item.estimatedPrice || 0), 0);
 
-        // Skip refreshUser for session-based system
-        toast.success(`${response.message} You earned ${response.totalPoints} points and estimated price is ₹${response.totalEstimatedPrice || 'N/A'}`);
+        // Update points across the system
+        addSubmission({ items });
+
+        toast.success(`Submission successful! You earned ${totalPoints} points and estimated price is ₹${totalPrice}`);
         setTimeout(() => {
           navigate('/dashboard');
         }, 2000);
@@ -151,13 +180,19 @@ const SubmitEWaste = () => {
           weight: exactWeight,
           isBulk: true
         };
-        // Use pointsService for bulk submission
-        const response = await pointsService.submitEWaste(submissionData);
-        console.log('✅ Bulk submit response:', response);
+        console.log('✅ Bulk submit data:', submissionData);
 
-        // Skip refreshUser for session-based system
+        // Calculate points for bulk submission (simplified)
+        const bulkPoints = Math.floor(parseFloat(exactWeight) * 2); // 2 points per kg
+        const bulkPrice = bulkPoints * 5; // Estimate ₹5 per point for bulk
 
-        toast.success(`Bulk submission received! ${response.message} You earned ${response.totalPoints} points. Our team will contact you for pickup arrangements.`);
+        // Update points across the system
+        addSubmission({
+          estimatedPoints: bulkPoints,
+          estimatedPrice: bulkPrice
+        });
+
+        toast.success(`Bulk submission received! You earned ${bulkPoints} points. Our team will contact you for pickup arrangements.`);
 
         setTimeout(() => {
           navigate('/dashboard');
@@ -184,13 +219,19 @@ const SubmitEWaste = () => {
           weight: exactWeight
         };
 
-        // Use pointsService for regular submission
-        const response = await pointsService.submitEWaste(submissionData);
-        console.log('✅ Submit response:', response);
+        console.log('✅ Submit data:', submissionData);
 
-      // Skip refreshUser for session-based system
+        // Use the calculated points and price from ML service
+        const points = estimatedPoints || Math.floor(parseFloat(exactWeight) * 2);
+        const price = estimatedPrice || 100;
 
-        toast.success(`${response.message} You earned ${response.totalPoints} points and estimated price is ₹${response.totalEstimatedPrice || estimatedPrice || 'N/A'}`);
+        // Update points across the system
+        addSubmission({
+          estimatedPoints: points,
+          estimatedPrice: price
+        });
+
+        toast.success(`Submission successful! You earned ${points} points and estimated price is ₹${price}`);
 
       // Show success modal or redirect
       setTimeout(() => {

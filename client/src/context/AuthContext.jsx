@@ -14,35 +14,33 @@ export const useAuth = () => {
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false); // Start as false to prevent blocking
   const [token, setToken] = useState(localStorage.getItem('token'));
 
   useEffect(() => {
+    // Non-blocking auth initialization
     const initAuth = async () => {
-      const savedToken = localStorage.getItem('token');
-
-      if (savedToken) {
-        try {
-          // Add a timeout to prevent hanging
-          const timeoutPromise = new Promise((_, reject) =>
-            setTimeout(() => reject(new Error('Auth timeout')), 5000)
-          );
-
-          const userData = await Promise.race([
-            authService.getCurrentUser(),
-            timeoutPromise
-          ]);
-
-          setUser(userData.user);
-          setToken(savedToken);
-        } catch (error) {
-          console.error('Auth initialization failed:', error.message);
-          localStorage.removeItem('token');
-          setToken(null);
+      try {
+        const savedToken = localStorage.getItem('token');
+        if (savedToken) {
+          console.log('Found saved token, will validate in background');
+          // Don't block the UI - validate token in background
+          setTimeout(async () => {
+            try {
+              const userData = await authService.getCurrentUser();
+              setUser(userData.user);
+              setToken(savedToken);
+              console.log('✅ User session restored');
+            } catch (error) {
+              console.log('⚠️ Token expired, clearing session');
+              localStorage.removeItem('token');
+              setToken(null);
+            }
+          }, 500);
         }
+      } catch (error) {
+        console.log('Auth init error (non-critical):', error.message);
       }
-
-      setLoading(false);
     };
 
     initAuth();
@@ -60,8 +58,7 @@ export const AuthProvider = ({ children }) => {
       toast.success('Welcome back!');
       return response;
     } catch (error) {
-      const message = error.response?.data?.message || 'Login failed';
-      toast.error(message);
+      toast.error(error.message || 'Login failed');
       throw error;
     } finally {
       setLoading(false);
@@ -80,8 +77,7 @@ export const AuthProvider = ({ children }) => {
       toast.success('Account created successfully!');
       return response;
     } catch (error) {
-      const message = error.response?.data?.message || 'Registration failed';
-      toast.error(message);
+      toast.error(error.message || 'Registration failed');
       throw error;
     } finally {
       setLoading(false);
@@ -95,21 +91,6 @@ export const AuthProvider = ({ children }) => {
     toast.success('Logged out successfully');
   };
 
-  const updateUser = (userData) => {
-    setUser(prev => ({ ...prev, ...userData }));
-  };
-
-  const refreshUser = async () => {
-    try {
-      const userData = await authService.getCurrentUser();
-      setUser(userData.user);
-      return userData.user;
-    } catch (error) {
-      console.error('Failed to refresh user data:', error);
-      throw error;
-    }
-  };
-
   const value = {
     user,
     token,
@@ -117,9 +98,7 @@ export const AuthProvider = ({ children }) => {
     login,
     register,
     logout,
-    updateUser,
-    refreshUser,
-    isAuthenticated: !!user && !!token
+    isAuthenticated: !!user
   };
 
   return (
