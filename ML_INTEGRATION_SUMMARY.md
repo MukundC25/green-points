@@ -1,7 +1,7 @@
 # 🤖 Green Points ML Integration - Complete Implementation
 
 **🎉 STATUS: PRODUCTION READY ✅**
-**📅 Last Updated**: July 31, 2025
+**📅 Last Updated**: September 10, 2025
 **🚀 Deployment**: All services running successfully
 **🧠 ML Service**: Active on http://localhost:8000
 **⚡ Performance**: Sub-100ms predictions with 85%+ accuracy
@@ -80,7 +80,7 @@ python train_model.py
 python main.py  # Runs on http://localhost:8000
 
 # 3. Start Backend & Frontend (in separate terminals)
-npm run dev  # Backend: http://localhost:5000, Frontend: http://localhost:5173
+npm run dev  # Backend: http://localhost:5001, Frontend: http://localhost:5178
 ```
 
 ### **Option 3: Docker (Production)**

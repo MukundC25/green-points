@@ -1,11 +1,15 @@
 # 🚀 Green Points System - Production Deployment Guide
 
+**Last Updated:** September 10, 2025
+**Status:** Production Ready ✅
+**Architecture:** Microservices with AI/ML Integration
+
 ## 📋 Overview
 
 This guide covers deploying the complete Green Points System to production with:
-- **Frontend**: Vercel (React/Vite)
-- **Backend**: Railway/Render (Node.js/Express)
-- **ML Service**: Railway (Python/FastAPI)
+- **Frontend**: Vercel (React/Vite) - Port 5178
+- **Backend**: Railway/Render (Node.js/Express) - Port 5001
+- **ML Service**: Railway (Python/FastAPI) - Port 8000
 - **Database**: MongoDB Atlas
 
 ## 🌐 Frontend Deployment (Vercel)
@@ -46,6 +50,7 @@ In Vercel Dashboard → Project → Settings → Environment Variables:
 ```
 VITE_API_URL=https://your-backend-url.railway.app/api
 VITE_NODE_ENV=production
+VITE_PORT=5178
 ```
 
 ### Step 4: Configure Build Settings
@@ -99,7 +104,7 @@ cd server
 
 ```
 NODE_ENV=production
-PORT=5000
+PORT=5001
 MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/greenpoints
 JWT_SECRET=your-super-secure-production-jwt-secret
 ML_SERVICE_URL=https://your-ml-service.railway.app
