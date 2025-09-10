@@ -10,18 +10,18 @@ import SubmitEWaste from './pages/SubmitEWaste';
 // Simple Layout without auth dependency
 function SimpleLayout({ children }) {
   return (
-    <div className="min-h-screen bg-gray-50">
-      <nav className="bg-green-600 text-white p-4">
-        <div className="flex items-center justify-between">
-          <h1 className="text-xl font-bold">🌱 Green Points System</h1>
-          <div className="space-x-4">
-            <a href="/dashboard" className="hover:underline">Dashboard</a>
-            <a href="/submit" className="hover:underline">Submit E-Waste</a>
-            <a href="/login" className="hover:underline">Login</a>
+    <div style={{ minHeight: '100vh', backgroundColor: '#f9fafb' }}>
+      <nav style={{ backgroundColor: '#16a34a', color: 'white', padding: '15px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <h1 style={{ margin: 0, fontSize: '20px', fontWeight: 'bold' }}>🌱 Green Points System</h1>
+          <div style={{ display: 'flex', gap: '20px' }}>
+            <a href="/dashboard" style={{ color: 'white', textDecoration: 'none' }}>Dashboard</a>
+            <a href="/submit" style={{ color: 'white', textDecoration: 'none' }}>Submit E-Waste</a>
+            <a href="/login" style={{ color: 'white', textDecoration: 'none' }}>Login</a>
           </div>
         </div>
       </nav>
-      <main className="p-6">
+      <main style={{ padding: '20px' }}>
         {children}
       </main>
     </div>
