@@ -1128,10 +1128,10 @@ graph TB
     end
     
     subgraph Routes["Route Handlers"]
-        AuthRoutes[/api/auth/*]
-        PointsRoutes[/api/points/*]
-        UserRoutes[/api/user/*]
-        CoreRoutes[/api/*]
+        AuthRoutes["Auth Routes"]
+        PointsRoutes["Points Routes"]
+        UserRoutes["User Routes"]
+        CoreRoutes["Core Routes"]
     end
     
     subgraph Services["Business Logic"]
@@ -1141,8 +1141,8 @@ graph TB
     end
     
     subgraph External["External Services"]
-        MLBackend[ML API<br/>FastAPI]
-        MongoDB[(MongoDB<br/>Database)]
+        MLBackend["ML API - FastAPI"]
+        MongoDB[("MongoDB Database")]
     end
     
     WebApp --> Express
