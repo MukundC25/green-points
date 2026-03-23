@@ -15,7 +15,7 @@
 
 **An intelligent e-waste rewards platform that incentivizes responsible electronic waste recycling through advanced machine learning-based pricing and a comprehensive gamified points system.**
 
-[Quick Start](#-quick-start--deployment) • [📐 Architecture](#-uml-diagrams--architecture) • [🤖 AI Features](#-ai-powered-pricing-system) • [📚 Documentation](#-api-endpoints) • [🤝 Contributing](#-contributing)
+[Quick Start](#-quick-start--deployment) • [Architecture](#-uml-diagrams--architecture) • [AI Features](#-ai-powered-pricing-system) • [Documentation](#-api-endpoints) • [Contributing](#-contributing)
 
 ---
 
