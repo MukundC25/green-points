@@ -15,13 +15,13 @@
 
 **An intelligent e-waste rewards platform that incentivizes responsible electronic waste recycling through advanced machine learning-based pricing and a comprehensive gamified points system.**
 
-[🚀 Quick Start](#-quick-start--deployment) • [📐 Architecture](#-uml-diagrams--architecture) • [🤖 AI Features](#-ai-powered-pricing-system) • [📚 Documentation](#-api-endpoints) • [🤝 Contributing](#-contributing)
+[Quick Start](#-quick-start--deployment) • [📐 Architecture](#-uml-diagrams--architecture) • [🤖 AI Features](#-ai-powered-pricing-system) • [📚 Documentation](#-api-endpoints) • [🤝 Contributing](#-contributing)
 
 ---
 
 </div>
 
-## 👨‍💻 About
+## About
 
 **Developed by:** Mukund Chavan | **Organization:** sortUs  
 **Last Updated:** November 20, 2025 | **Version:** 2.0.0
@@ -30,7 +30,7 @@
 
 This README includes comprehensive UML diagrams to help understand the system architecture:
 
-### 🎯 Diagram Index
+### Diagram Index
 1. **[High-Level Architecture](#-high-level-architecture-diagram)** - Overall system design with all layers
 2. **[Component Interaction](#-component-interaction-diagram)** - Frontend component relationships
 3. **[Sequence Diagrams](#-sequence-diagrams)** - E-Waste submission, authentication, and redemption flows
@@ -45,50 +45,50 @@ This README includes comprehensive UML diagrams to help understand the system ar
 
 > **Note**: All diagrams are created using Mermaid syntax and will render automatically on GitHub and other Markdown viewers that support Mermaid.
 
-## ✨ Key Highlights
+## Key Highlights
 
 <table>
 <tr>
 <td width="50%">
 
-### 🧠 **AI-Powered Intelligence**
-- 🎯 **Random Forest ML Model** with 85%+ accuracy
-- ⚡ **Sub-100ms predictions** for instant feedback
-- 🔮 **Confidence scoring** (0.6-0.95 range)
-- 🛡️ **Three-tier fallback** system for reliability
-- 📊 **Multi-factor analysis** (type, brand, condition, age, weight)
+### **AI-Powered Intelligence**
+- **Random Forest ML Model** with 85%+ accuracy
+- **Sub-100ms predictions** for instant feedback
+- **Confidence scoring** (0.6-0.95 range)
+- **Three-tier fallback** system for reliability
+- **Multi-factor analysis** (type, brand, condition, age, weight)
 
 </td>
 <td width="50%">
 
-### 🎨 **Modern User Experience**
-- 💎 **Beautiful React UI** with Tailwind CSS
-- 📱 **Fully responsive** design for all devices
-- 🎮 **Gamified rewards** system with badges
-- 🔔 **Real-time notifications** with toast messages
-- 📈 **Interactive dashboards** with live statistics
+### **Modern User Experience**
+- **Beautiful React UI** with Tailwind CSS
+- **Fully responsive** design for all devices
+- **Gamified rewards** system with badges
+- **Real-time notifications** with toast messages
+- **Interactive dashboards** with live statistics
 
 </td>
 </tr>
 <tr>
 <td width="50%">
 
-### 🏗️ **Enterprise Architecture**
-- 🔌 **Microservices design** (Frontend + Backend + ML)
-- 🐳 **Docker containerization** for easy deployment
-- 🔐 **JWT authentication** with session management
-- 🚀 **Production-ready** with health monitoring
-- ⚙️ **Scalable infrastructure** for growth
+### **Enterprise Architecture**
+- **Microservices design** (Frontend + Backend + ML)
+- **Docker containerization** for easy deployment
+- **JWT authentication** with session management
+- **Production-ready** with health monitoring
+- **Scalable infrastructure** for growth
 
 </td>
 <td width="50%">
 
-### 💼 **Business Features**
-- 💰 **Points-based rewards** marketplace
-- 🔗 **Referral program** with bonuses
-- 📜 **Complete transaction** history
-- 🏆 **Achievement badges** system
-- 📊 **Analytics & insights** dashboard
+### **Business Features**
+- **Points-based rewards** marketplace
+- **Referral program** with bonuses
+- **Complete transaction** history
+- **Achievement badges** system
+- **Analytics & insights** dashboard
 
 </td>
 </tr>
@@ -96,9 +96,9 @@ This README includes comprehensive UML diagrams to help understand the system ar
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
-### 🏗️ Technology Stack Diagram
+### Technology Stack Diagram
 
 ```mermaid
 graph TB
@@ -182,7 +182,7 @@ graph TB
     style Deployment fill:#ffab91
 ```
 
-### 📦 Frontend Technologies
+### Frontend Technologies
 - **React.js 18+** - UI library with component-based architecture
 - **Vite 5.x** - Fast build tool and development server
 - **Tailwind CSS 3.x** - Utility-first CSS framework
@@ -190,7 +190,7 @@ graph TB
 - **Axios** - HTTP client for API requests
 - **React Hot Toast** - Toast notifications
 
-### 🖥️ Backend Technologies
+### Backend Technologies
 - **Node.js 16+** - JavaScript runtime environment
 - **Express.js 4.x** - Web application framework
 - **MongoDB 7.x** - NoSQL document database
@@ -200,7 +200,7 @@ graph TB
 - **Express Session** - Session management
 - **Connect-Mongo** - MongoDB session store
 
-### 🧠 AI/ML Technologies (Python)
+### AI/ML Technologies (Python)
 - **Python 3.12+** - Programming language
 - **FastAPI 0.100+** - High-performance async Python API framework
 - **scikit-learn** - Machine learning library with Random Forest regression
@@ -209,20 +209,20 @@ graph TB
 - **joblib** - Model serialization and persistence
 - **uvicorn** - ASGI server for production deployment
 
-### 🛠️ Development Tools
+### Development Tools
 - **npm** - Package management
 - **Git** - Version control
 - **ESLint** - Code linting
 - **PostCSS** - CSS processing
 - **Docker** - Containerization for ML service
 
-### ☁️ Deployment Platforms
+### Deployment Platforms
 - **Vercel** - Frontend hosting with CDN
 - **Railway/Render** - Backend API hosting
 - **Google Cloud Run** - ML service hosting
 - **MongoDB Atlas** - Cloud database (M0 Free Tier)
 
-### 🤖 AI-Powered Features
+### AI-Powered Features
 - **ML-Based Pricing**: Random Forest model predicts e-waste value and green points
 - **Smart Points Calculation**: AI considers product type, condition, weight, age, brand
 - **Confidence Scoring**: ML predictions include confidence levels
@@ -231,7 +231,7 @@ graph TB
 - **Model Monitoring**: Track prediction accuracy and model performance
 - **History Endpoints**: Dedicated endpoints for pickup, redemption, and earned histories
 
-## 🏗️ System Architecture
+## System Architecture
 
 ### 🌐 High-Level Architecture Diagram
 
@@ -293,7 +293,7 @@ graph TB
     style Database fill:#e8f5e9
 ```
 
-### 🔄 Component Interaction Diagram
+### Component Interaction Diagram
 
 ```mermaid
 graph LR
@@ -348,7 +348,7 @@ graph LR
     style K fill:#ba68c8
 ```
 
-### 📊 Microservices Overview
+### Microservices Overview
 ```
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
 │   Frontend      │    │   Backend API   │    │   ML Service    │
@@ -363,7 +363,7 @@ graph LR
                         └─────────────────┘
 ```
 
-### 🔄 Sequence Diagrams
+### Sequence Diagrams
 
 #### E-Waste Submission Flow (AI-Powered)
 
@@ -471,7 +471,7 @@ sequenceDiagram
     end
 ```
 
-### 🖥️ Backend API (Node.js + Express)
+### Backend API (Node.js + Express)
 ```
 server/
 ├── index.js                 # Main server with ML integration
@@ -489,7 +489,7 @@ server/
     └── pointsCalculator.js  # Fallback calculation logic
 ```
 
-### 📱 Frontend (React + Vite)
+### Frontend (React + Vite)
 ```
 client/
 ├── src/
@@ -503,7 +503,7 @@ client/
 └── dist/                    # Production build output
 ```
 
-### 🧠 AI/ML Service (Python + FastAPI)
+### AI/ML Service (Python + FastAPI)
 ```
 ml_service/
 ├── main.py                  # FastAPI app with prediction endpoints
@@ -516,7 +516,7 @@ ml_service/
 └── .env                     # ML service configuration
 ```
 
-### 🎯 Class Diagram (Backend Models)
+### Class Diagram (Backend Models)
 
 ```mermaid
 classDiagram
@@ -612,7 +612,7 @@ classDiagram
     MLService ..> EWasteSubmission : predicts points for
 ```
 
-### 🚀 Deployment Architecture Diagram
+### Deployment Architecture Diagram
 
 ```mermaid
 graph TB
@@ -667,9 +667,9 @@ graph TB
 ```
 ---
 
-## 🚀 Quick Start & Deployment
+## Quick Start & Deployment
 
-### 📋 Prerequisites
+### Prerequisites
 
 <table>
 <tr>
@@ -700,27 +700,27 @@ graph TB
 </tr>
 </table>
 
-### ⚡ One-Command Startup
+### One-Command Startup
 
 ```bash
-# 🎯 Clone and start everything with ML service
+# Clone and start everything with ML service
 git clone https://github.com/MukundC25/green-points.git
 cd green-points
 chmod +x start_with_ml.sh
 ./start_with_ml.sh
 
-# 🌐 Services will be available at:
+# Services will be available at:
 # Frontend: http://localhost:5178
 # Backend:  http://localhost:5001
 # ML API:   http://localhost:8000
 ```
 
-> **💡 Pro Tip:** The startup script automatically installs dependencies, trains the ML model, and starts all services!
+> **Pro Tip:** The startup script automatically installs dependencies, trains the ML model, and starts all services!
 
-### 🔧 Manual Installation
+### Manual Installation
 
 <details>
-<summary><b>📦 Step 1: Clone Repository</b></summary>
+<summary><b>Step 1: Clone Repository</b></summary>
 
 ```bash
 git clone https://github.com/MukundC25/green-points.git
@@ -729,7 +729,7 @@ cd green-points
 </details>
 
 <details>
-<summary><b>📥 Step 2: Install All Dependencies</b></summary>
+<summary><b>Step 2: Install All Dependencies</b></summary>
 
 ```bash
 # Install root, server, and client dependencies in one command
@@ -738,7 +738,7 @@ npm run install-all
 </details>
 
 <details>
-<summary><b>🤖 Step 3: Setup ML Service</b></summary>
+<summary><b>Step 3: Setup ML Service</b></summary>
 
 ```bash
 # Creates virtual environment, installs dependencies, and trains the model
@@ -748,7 +748,7 @@ chmod +x setup_ml_service.sh
 </details>
 
 <details>
-<summary><b>⚙️ Step 4: Environment Configuration</b></summary>
+<summary><b>Step 4: Environment Configuration</b></summary>
 
 **Backend (.env in `server/` directory)**
 ```env
@@ -797,16 +797,16 @@ cd client && npm run dev
 ```
 </details>
 
-### 🌐 Service URLs
+### Service URLs
 
 | Service | URL | Description |
 |---------|-----|-------------|
-| 🎨 **Frontend** | http://localhost:5173-5178 | React UI Application |
-| 🔧 **Backend API** | http://localhost:5000-5001 | Express REST API |
-| 🤖 **ML Service** | http://localhost:8000 | FastAPI ML Predictions |
-| 🗄️ **MongoDB** | localhost:27017 | Database Server |
+| **Frontend** | http://localhost:5173-5178 | React UI Application |
+| **Backend API** | http://localhost:5000-5001 | Express REST API |
+| **ML Service** | http://localhost:8000 | FastAPI ML Predictions |
+| **MongoDB** | localhost:27017 | Database Server |
 
-### 🔍 Environment Validation
+### Environment Validation
 
 ```bash
 # Validate your setup before starting
@@ -817,7 +817,7 @@ npm run validate
 
 ---
 
-### 📊 Data Flow Diagram
+### Data Flow Diagram
 
 ```mermaid
 graph LR
@@ -885,7 +885,7 @@ graph LR
     style Storage fill:#fce4ec
 ```
 
-### 🔄 E-Waste Submission State Machine
+### E-Waste Submission State Machine
 
 ```mermaid
 stateDiagram-v2
@@ -920,7 +920,7 @@ stateDiagram-v2
     end note
 ```
 
-### 🔐 User Authentication State Diagram
+### User Authentication State Diagram
 
 ```mermaid
 stateDiagram-v2
@@ -955,11 +955,11 @@ stateDiagram-v2
     end note
 ```
 
-## 🤖 AI-Powered Pricing System
+## AI-Powered Pricing System
 
 The system now uses machine learning for intelligent e-waste pricing and green points calculation:
 
-### 🧠 ML Model Architecture
+### ML Model Architecture
 
 ```mermaid
 graph TB
@@ -1089,29 +1089,29 @@ graph TB
 </tr>
 </table>
 
-### ⭐ Condition Multipliers
+### Condition Multipliers
 
 | Condition | Bonus | Description |
 |-----------|-------|-------------|
-| ✅ **Working** | +30 points | Fully functional device |
-| 🔧 **Repairable** | +15 points | Can be fixed |
-| ❌ **Dead** | No bonus | Non-functional |
+| **Working** | +30 points | Fully functional device |
+| **Repairable** | +15 points | Can be fixed |
+| **Dead** | No bonus | Non-functional |
 
-### 🎁 Additional Bonuses
+### Additional Bonuses
 
 ```
-📦 Quantity Bonus      → +5 points per item
-👤 User Frequency      → Regular: +20 | Occasional: +10 | First-time: 0
-🎯 Bulk Submission     → +25 points (5+ items)
-💎 Premium Items       → +10 points (valuable electronics)
-⚖️ Weight Bonus        → +2 points per kg
+Quantity Bonus      → +5 points per item
+User Frequency      → Regular: +20 | Occasional: +10 | First-time: 0
+Bulk Submission     → +25 points (5+ items)
+Premium Items       → +10 points (valuable electronics)
+Weight Bonus        → +2 points per kg
 ```
 
 ---
 
-## 🔧 API Endpoints
+## API Endpoints
 
-### 🗺️ API Architecture Diagram
+### API Architecture Diagram
 
 ```mermaid
 graph TB
@@ -1175,7 +1175,7 @@ graph TB
     style MongoDB fill:#66bb6a
 ```
 
-### 📡 REST API Endpoints
+### REST API Endpoints
 
 #### Authentication
 - `POST /api/auth/register` - Register new user
@@ -1281,7 +1281,7 @@ erDiagram
     }
 ```
 
-### 🗂️ User Document Structure
+### User Document Structure
 ```javascript
 {
   "_id": "user123",
@@ -1317,7 +1317,7 @@ erDiagram
 }
 ```
 
-## 🎨 UI Components
+## UI Components
 
 ### Key Pages
 - **Landing Page**: Marketing and feature overview
@@ -1333,7 +1333,7 @@ erDiagram
 - **Icons**: Lucide React icons for consistency
 - **Responsive**: Mobile-first design with Tailwind CSS
 
-## 🔒 Security Features
+## Security Features
 
 - **JWT Authentication**: Secure token-based authentication
 - **Password Hashing**: bcrypt for secure password storage
@@ -1342,7 +1342,7 @@ erDiagram
 - **CORS Configuration**: Proper cross-origin resource sharing setup
 - **Helmet.js**: Security headers for Express.js
 
-## 🧪 Testing
+## Testing
 
 ### Running Tests
 ```bash
@@ -1361,7 +1361,7 @@ npm test
 - Component testing for React components
 - Integration tests for user workflows
 
-## 📈 Future Enhancements
+## Future Enhancements
 
 ### Planned Features
 - **Image Recognition**: AI-powered e-waste classification
@@ -1379,12 +1379,12 @@ npm test
 
 ---
 
-## 🚀 Production Deployment
+## Production Deployment
 
-### 🌐 Frontend Deployment (Vercel)
+### Frontend Deployment (Vercel)
 
 <details>
-<summary><b>🎨 Deploy React Frontend to Vercel</b></summary>
+<summary><b>Deploy React Frontend to Vercel</b></summary>
 
 **Step 1: Prepare Build**
 ```bash
@@ -1416,7 +1416,7 @@ VITE_NODE_ENV=production
 ### 🖥️ Backend Deployment Options
 
 <details>
-<summary><b>🚂 Option 1: Railway (Recommended)</b></summary>
+<summary><b>Option 1: Railway (Recommended)</b></summary>
 
 ```json
 // Add to package.json in server/
@@ -1433,7 +1433,7 @@ VITE_NODE_ENV=production
 </details>
 
 <details>
-<summary><b>🎨 Option 2: Render</b></summary>
+<summary><b>Option 2: Render</b></summary>
 
 Create `render.yaml` in root:
 ```yaml
@@ -1448,7 +1448,7 @@ services:
 </details>
 
 <details>
-<summary><b>☁️ Option 3: Heroku</b></summary>
+<summary><b>Option 3: Heroku</b></summary>
 
 ```bash
 # Create Procfile in server/
@@ -1462,7 +1462,7 @@ git push heroku main
 </details>
 
 <details>
-<summary><b>🌊 Option 4: DigitalOcean/AWS</b></summary>
+<summary><b>Option 4: DigitalOcean/AWS</b></summary>
 
 ```bash
 # Use PM2 for process management
@@ -1474,7 +1474,7 @@ pm2 save
 
 </details>
 
-### 🧠 ML Service Deployment
+### ML Service Deployment
 
 **Option 1: Railway (Python)**
 ```bash
@@ -1497,10 +1497,10 @@ COPY . .
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
 ```
 
-### 🗄️ Database Deployment
+### Database Deployment
 
 <details>
-<summary><b>☁️ MongoDB Atlas (Recommended)</b></summary>
+<summary><b>MongoDB Atlas (Recommended)</b></summary>
 
 1. Create free M0 cluster at [MongoDB Atlas](https://www.mongodb.com/cloud/atlas)
 2. Whitelist IP addresses (0.0.0.0/0 for development)
@@ -1512,14 +1512,14 @@ mongodb+srv://username:password@cluster.mongodb.net/greenpoints
 ```
 
 **Free Tier Includes:**
-- ✅ 512 MB storage
-- ✅ Shared RAM
-- ✅ Perfect for development
+- 512 MB storage
+- Shared RAM
+- Perfect for development
 
 </details>
 
 <details>
-<summary><b>🐳 Local MongoDB with Docker</b></summary>
+<summary><b>Local MongoDB with Docker</b></summary>
 
 ```bash
 # Run MongoDB in Docker
@@ -1535,7 +1535,7 @@ docker ps
 
 </details>
 
-### 🔒 Production Environment Variables
+### Production Environment Variables
 
 **Backend (.env.production)**
 ```bash
@@ -1553,7 +1553,7 @@ VITE_API_URL=https://your-backend.railway.app/api
 VITE_NODE_ENV=production
 ```
 
-### 📊 Performance Optimization
+### Performance Optimization
 
 **Frontend Optimizations**
 - Code splitting with React.lazy()
@@ -1575,11 +1575,11 @@ VITE_NODE_ENV=production
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 We love contributions! Here's how you can help make Green Points even better:
 
-### 🌟 How to Contribute
+### How to Contribute
 
 ```bash
 # 1️⃣ Fork the repository
@@ -1603,29 +1603,29 @@ git push origin feature/amazing-feature
 # Go to the original repo and click 'New Pull Request'
 ```
 
-### 📋 Contribution Guidelines
+### Contribution Guidelines
 
-- ✅ Write clear, descriptive commit messages
-- ✅ Follow the existing code style
-- ✅ Add tests for new features
-- ✅ Update documentation as needed
-- ✅ Keep PRs focused and atomic
+- Write clear, descriptive commit messages
+- Follow the existing code style
+- Add tests for new features
+- Update documentation as needed
+- Keep PRs focused and atomic
 
-### 🐛 Found a Bug?
+### Found a Bug?
 
 [Open an issue](https://github.com/MukundC25/green-points/issues/new) with:
-- 🔍 Clear description of the bug
-- 📝 Steps to reproduce
-- 💻 Your environment (OS, Node version, etc.)
-- 📸 Screenshots if applicable
+- Clear description of the bug
+- Steps to reproduce
+- Your environment (OS, Node version, etc.)
+- Screenshots if applicable
 
-### 💡 Have an Idea?
+### Have an Idea?
 
 We'd love to hear it! [Start a discussion](https://github.com/MukundC25/green-points/discussions) or open a feature request issue.
 
 ---
 
-## 📄 License
+## License
 
 This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
 
@@ -1635,7 +1635,7 @@ MIT License - Feel free to use, modify, and distribute this software.
 
 ---
 
-## 👨‍💻 Developer & Maintainer
+## Developer & Maintainer
 
 <div align="center">
 
@@ -1651,11 +1651,11 @@ AI Research Intern @ sortUs
 
 ---
 
-## 📈 Project Status & Metrics
+## Project Status & Metrics
 
 <div align="center">
 
-### 🎯 Current Version: **2.0.0**
+### Current Version: **2.0.0**
 
 ![Status](https://img.shields.io/badge/Status-Production%20Ready-success?style=flat-square)
 ![Uptime](https://img.shields.io/badge/Uptime-99.9%25-brightgreen?style=flat-square)
@@ -1664,33 +1664,33 @@ AI Research Intern @ sortUs
 
 </div>
 
-### ✅ Latest Updates (November 20, 2025)
+### Latest Updates (November 20, 2025)
 
 | Feature | Status | Notes |
 |---------|--------|-------|
-| 🎨 Frontend (React) | ✅ Running | Port 5178 |
-| 🔧 Backend API | ✅ Running | Port 5001 |
-| 🤖 ML Service | ✅ Running | Port 8000 |
-| 🗄️ Database | ✅ Connected | MongoDB Atlas |
-| 📊 Analytics | ✅ Active | Real-time tracking |
-| 🔐 Security | ✅ Implemented | JWT + Session |
-| 📱 Mobile Ready | ✅ Responsive | All devices |
-| 🐳 Docker Support | ✅ Available | ML containerized |
+| Frontend (React) | Running | Port 5178 |
+| Backend API | Running | Port 5001 |
+| ML Service | Running | Port 8000 |
+| Database | Connected | MongoDB Atlas |
+| Analytics | Active | Real-time tracking |
+| Security | Implemented | JWT + Session |
+| Mobile Ready | Responsive | All devices |
+| Docker Support | Available | ML containerized |
 
-### 🚀 Recent Improvements
+### Recent Improvements
 
-- ✨ Enhanced UI/UX with modern design patterns
-- 🎯 Improved ML model accuracy to 85%+
-- ⚡ Optimized API response times (<100ms)
-- 🔒 Strengthened security measures
-- 📈 Added comprehensive analytics
-- 🎮 Implemented gamification features
-- 📚 Complete documentation overhaul with UML diagrams
-- 🐛 Fixed critical bugs and edge cases
+- Enhanced UI/UX with modern design patterns
+- Improved ML model accuracy to 85%+
+- Optimized API response times (<100ms)
+- Strengthened security measures
+- Added comprehensive analytics
+- Implemented gamification features
+- Complete documentation overhaul with UML diagrams
+- Fixed critical bugs and edge cases
 
 ---
 
-## 🌍 Environmental Impact
+## Environmental Impact
 
 <div align="center">
 
@@ -1702,23 +1702,23 @@ AI Research Intern @ sortUs
 <tr>
 <td align="center" width="25%">
 <img src="https://img.icons8.com/color/96/000000/recycle-sign.png" width="64" height="64" alt="Recycle"/>
-<h4>♻️ Responsible Disposal</h4>
+<h4> Responsible Disposal</h4>
 <p>Encouraging proper e-waste recycling</p>
 </td>
 <td align="center" width="25%">
 <img src="https://img.icons8.com/color/96/000000/globe.png" width="64" height="64" alt="Globe"/>
-<h4>🌍 Reduce Pollution</h4>
+<h4> Reduce Pollution</h4>
 <p>Minimizing electronic waste impact</p>
 </td>
 <td align="center" width="25%">
 <img src="https://img.icons8.com/color/96/000000/restart.png" width="64" height="64" alt="Circular"/>
-<h4>🔄 Circular Economy</h4>
+<h4> Circular Economy</h4>
 <p>Promoting reuse and recycling</p>
 </td>
 <td align="center" width="25%">
 <img src="https://img.icons8.com/color/96/000000/trophy.png" width="64" height="64" alt="Rewards"/>
-<h4>🏆 Incentivize Good</h4>
-<p>Rewarding sustainable behavior</p>
+<h4> Incentivize Good</h4>
+<p> Rewarding sustainable behavior</p>
 </td>
 </tr>
 </table>
@@ -1727,7 +1727,7 @@ AI Research Intern @ sortUs
 
 <div align="center">
 
-### 🌟 Star this repo if you find it helpful!
+### Star this repo if you find it helpful!
 
 **Together, we're building a greener, more sustainable future!** 🌱
 
